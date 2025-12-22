@@ -15,7 +15,7 @@ export const LetterBar = () => {
   return (
     <div className={styles.letterBar}>
       {letters.map((letterTile, index) => (
-        <Letter key={index} letter={letterTile} />
+        <Letter key={index} id={`letter-${index}`} letter={letterTile} />
       ))}
     </div>
   );
