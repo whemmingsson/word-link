@@ -1,6 +1,6 @@
-import { words } from "../../data/words_filtered";
-import { Node } from "../types/LetterNode";
-import { buildTree, hasWord } from "../utils/treeUtils";
+import { words } from "../../../data/words_filtered";
+import { buildTree, hasWord } from "../../../common/utils/treeUtils";
+import type { Node } from "../../../common/types/Node";
 
 export class DictionaryService {
   dictionary: Node;
@@ -9,6 +9,7 @@ export class DictionaryService {
   constructor() {
     this.dictionary = buildTree(words);
     this.cache = new Map<string, boolean>();
+    console.log("DictionaryService initialized with dictionary tree.");
   }
 
   hasWord(word: string): boolean {
@@ -21,3 +22,6 @@ export class DictionaryService {
     return result;
   }
 }
+
+// Singleton instance - created once on app load
+export const dictionaryService = new DictionaryService();

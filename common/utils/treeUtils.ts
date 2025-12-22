@@ -1,4 +1,4 @@
-import { Node } from "../types/LetterNode";
+import type { Node } from "../types/Node";
 
 export const buildTree = (words: string[]): Node => {
   const root: Node = {
