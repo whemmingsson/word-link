@@ -4,6 +4,8 @@ import { LetterBar } from "./components/LetterBar";
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { useState } from "react";
 import type { LetterTile } from "../../common/types/LetterTile";
+import { Controls } from "./components/Controls";
+import { JoinHandler } from "./components/JoinHandler";
 
 interface PlacedLetter {
   letter: LetterTile;
@@ -40,9 +42,11 @@ function App() {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
+      <JoinHandler />
       <h1>Word Link</h1>
       <Board placedLetters={placedLetters} />
       <LetterBar />
+      <Controls />
     </DndContext>
   );
 }
