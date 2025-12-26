@@ -8,10 +8,9 @@ export class Grid {
   }
 
   _cellIsOccupied(row, col) {
-    for (let i = 0; i < this.letters.length; i++) {
-      if (this.letters[i].row === row && this.letters[i].col === col) {
-        return true;
-      }
+    if (window.boardService) {
+      const boardState = window.boardService.getBoardState();
+      return boardState[row][col].letter !== "";
     }
     return false;
   }
@@ -71,32 +70,61 @@ export class Grid {
       cursor(ARROW);
     }
 
-    // Draw placed letters
+    // Draw live letters (being placed this turn)
     fill(0);
     textSize(24);
     textAlign(CENTER, CENTER);
-    for (let i = 0; i < this.letters.length; i++) {
+    for (let i = 0; i < this.liveLetters.length; i++) {
+      const placedLetter = this.liveLetters[i];
+
       // Skip rendering if this letter is being dragged from the grid
       if (
         window.gameContext.letterBeeingDragged &&
         window.gameContext.dragSource === "grid" &&
-        this.letters[i] === window.gameContext.draggedGridLetter
+        window.gameContext.draggedGridLetter === placedLetter
       ) {
         continue;
       }
 
-      const letter = this.letters[i].letter;
-      const x = this.letters[i].col * this.cellSize + this.cellSize / 2;
-      const y = this.letters[i].row * this.cellSize + this.cellSize / 2;
+      const x = placedLetter.col * this.cellSize + this.cellSize / 2;
+      const y = placedLetter.row * this.cellSize + this.cellSize / 2;
       fill("#ffe881ff");
       rect(
-        x - window.gameContext.cellSize / 2,
-        y - window.gameContext.cellSize / 2,
-        window.gameContext.cellSize,
-        window.gameContext.cellSize
+        x - this.cellSize / 2,
+        y - this.cellSize / 2,
+        this.cellSize,
+        this.cellSize
       );
       fill(0);
-      text(letter, x, y);
+      text(placedLetter.letter, x, y);
+    }
+
+    // Draw placed letters from BoardService
+    if (window.boardService) {
+      fill(0);
+      textSize(24);
+      textAlign(CENTER, CENTER);
+
+      const letterTile = window.boardService.getPlacedLetters();
+
+      if (letterTile.letter !== "") {
+        // Skip rendering if this letter is being dragged from the grid
+        const isBeingDragged =
+          window.gameContext.letterBeeingDragged &&
+          window.gameContext.dragSource === "grid" &&
+          window.gameContext.draggedGridLetter &&
+          window.gameContext.draggedGridLetter.row === row &&
+          window.gameContext.draggedGridLetter.col === col;
+
+        if (isBeingDragged) {
+          return;
+        }
+
+        const x = col * this.cellSize + this.cellSize / 2;
+        const y = row * this.cellSize + this.cellSize / 2;
+        fill(0);
+        text(letterTile.letter, x, y);
+      }
     }
   }
 
@@ -129,15 +157,26 @@ export class Grid {
   }
 
   dropLetter(letter) {
+    console.log("Dropping letter:", letter);
     const mX = mouseX;
     const mY = mouseY;
     const col = this._getCol(mX);
     const row = this._getRow(mY);
     if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
-      const placedLetter = { letter: letter, row: row, col: col };
-      this.letters.push(placedLetter);
-      this.liveLetters.push(placedLetter);
-      return true;
+      if (window.boardService) {
+        const success = window.boardService.placeLetter(row, col, letter);
+        if (success) {
+          const placedLetter = {
+            letter: letter.letter,
+            value: letter.value,
+            row: row,
+            col: col,
+          };
+          this.letters.push(placedLetter);
+          this.liveLetters.push(placedLetter);
+        }
+        return success;
+      }
     }
     return false;
   }
@@ -162,5 +201,45 @@ export class Grid {
   removeLetter(placedLetter) {
     this.letters = this.letters.filter((l) => l !== placedLetter);
     this.liveLetters = this.liveLetters.filter((l) => l !== placedLetter);
+
+    // Also remove from BoardService
+    /*if (window.boardService && placedLetter) {
+      const boardState = window.boardService.getBoardState();
+      if (
+        boardState[placedLetter.row] &&
+        boardState[placedLetter.row][placedLetter.col]
+      ) {
+        boardState[placedLetter.row][placedLetter.col] = {
+          letter: "",
+          value: 0,
+        };
+      }
+    } */
+  }
+
+  finishMove() {
+    console.log(this.liveLetters);
+    // Move the live letters to permanent state in BoardService
+    if (window.boardService) {
+      for (let i = 0; i < this.liveLetters.length; i++) {
+        const placedLetter = this.liveLetters[i];
+        window.boardService.finalizeLetterPlacement(
+          placedLetter.row,
+          placedLetter.col
+        );
+      }
+    }
+    this.lockLetters();
+  }
+
+  resetMove() {
+    // Remove live letters from BoardService
+    if (window.boardService) {
+      for (let i = 0; i < this.liveLetters.length; i++) {
+        const placedLetter = this.liveLetters[i];
+        window.boardService.removeLetter(placedLetter.row, placedLetter.col);
+      }
+    }
+    this.liveLetters = [];
   }
 }

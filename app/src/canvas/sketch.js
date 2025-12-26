@@ -11,6 +11,28 @@ window.gameContext = {};
 window.gameContext.letterBeeingDragged = false;
 window.gameContext.cellSize = cellSize;
 
+const setupActionButtons = () => {
+  // Create a button to finish the move
+  const finishMoveButton = document.createElement("button");
+  finishMoveButton.innerText = "Finish Move";
+  finishMoveButton.onclick = () => {};
+
+  document.getElementById("actions").appendChild(finishMoveButton);
+
+  // Create a button to reset the placed live letters
+  const resetMoveButton = document.createElement("button");
+  resetMoveButton.innerText = "Reset Move";
+  resetMoveButton.onclick = () => {
+    // Move all live letters back to the letterbar
+    grid.liveLetters.forEach((letter) => {
+      bar.addLetter(letter);
+    });
+    grid.resetMove();
+  };
+
+  document.getElementById("actions").appendChild(resetMoveButton);
+};
+
 window.setup = function () {
   grid = new Grid(15, 15, cellSize);
   bar = new Letterbar(0, grid.getHeight() + padding, grid.getWidth(), cellSize);
@@ -21,6 +43,8 @@ window.setup = function () {
   ).parent("canvas-wrapper");
 
   bar.init();
+
+  setupActionButtons();
 };
 
 window.draw = function () {
@@ -71,16 +95,13 @@ window.mousePressed = function () {
 
 window.mouseReleased = function () {
   if (window.gameContext.letterBeeingDragged) {
-    let letterHandled = false;
-
     // Dragging from bar to grid
     if (window.gameContext.dragSource === "bar") {
       if (
         grid.canDropLetter() &&
-        grid.dropLetter(window.gameContext.letterBeeingDragged.letter)
+        grid.dropLetter(window.gameContext.letterBeeingDragged)
       ) {
         bar.removeLetter(window.gameContext.letterBeeingDragged);
-        letterHandled = true;
       }
       // If letter wasn't successfully dropped, it stays in the bar (no action needed)
     }
@@ -90,13 +111,11 @@ window.mouseReleased = function () {
         // Drop letter back to bar
         bar.addLetter(window.gameContext.letterBeeingDragged);
         grid.removeLetter(window.gameContext.draggedGridLetter);
-        letterHandled = true;
       }
       // Drop back to grid (same or different cell)
       else if (grid.canDropLetter()) {
         grid.removeLetter(window.gameContext.draggedGridLetter);
         grid.dropLetter(window.gameContext.letterBeeingDragged.letter);
-        letterHandled = true;
       }
       // If not dropped anywhere valid, letter stays in original grid position
     }

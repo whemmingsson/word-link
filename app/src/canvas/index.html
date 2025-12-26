@@ -9,14 +9,16 @@
 </head>
 <body>
     <div id="canvas-wrapper"></div>
+    <div id="actions"></div>
     
     <script type="module">
-        console.log("Loading services...");
       // Import services
-      import { dictionaryService, letterPoolService } from '../service/services';
+      import { dictionaryService, letterPoolService, boardService } from '../service/services';
       // Make available globally for p5.js sketches
       window.dictionaryService = dictionaryService;
       window.letterPoolService = letterPoolService;
+      window.boardService = boardService;
+
       window.servicesReady = true;
       console.log("Services are ready and available globally.");
     </script>

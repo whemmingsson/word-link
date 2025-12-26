@@ -19,6 +19,11 @@ export class LetterPoolService {
     }
     return drawnLetters;
   }
+
+  getValueOfLetter(letter: string): number {
+    const letterTile = this.letterPool.find((lt) => lt.letter === letter);
+    return letterTile ? letterTile.value : 0;
+  }
 }
 
 // Singleton instance - created once on app load
