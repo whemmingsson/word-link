@@ -2,9 +2,11 @@ import { Grid } from "./grid.js";
 import { Letterbar } from "./letterbar.js";
 import { renderUtils } from "./renderUtils.js";
 import { styleUtils } from "./styleUtils.js";
+import { WildcardSelector } from "./wildcardSelector.js";
 
 let grid;
 let bar;
+let wildcardSelector;
 const margin = 20;
 const cellSize = 50;
 let initialized = false;
@@ -68,8 +70,10 @@ window.setup = function () {
     grid.getHeight() + bar.getHeight() + margin
   ).parent("canvas-wrapper");
 
-  bar.init();
+  // Must be after createCanvas to ensure width/height are defined
+  wildcardSelector = new WildcardSelector();
 
+  bar.init();
   setupActionButtons();
 
   textAlign(CENTER, CENTER);
@@ -99,43 +103,16 @@ window.draw = function () {
 
 window.mousePressed = function () {
   if (window.gameContext.wildcard?.selecting) {
-    // Check which letter was clicked
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".split("");
-    const cols = 7;
-    const cellSize = 40;
-    const boxW = 400;
-    const boxH = 350;
-    const boxX = width / 2 - boxW / 2;
-    const boxY = height / 2 - boxH / 2;
-    const startX = boxX + 40;
-    const startY = boxY + 80;
-
-    for (let i = 0; i < letters.length; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const x = startX + col * (cellSize + 5);
-      const y = startY + row * (cellSize + 5);
-
-      // Check if mouse is within this letter's bounds
-      if (
-        mouseX > x &&
-        mouseX < x + cellSize &&
-        mouseY > y &&
-        mouseY < y + cellSize
-      ) {
-        // Update the wildcard letter
-        window.gameContext.wildcard.letter.letter = letters[i];
-        window.boardService.updateLetterAt(
-          window.gameContext.wildcard.letter.row,
-          window.gameContext.wildcard.letter.col,
-          window.gameContext.wildcard.letter
-        );
-        window.gameContext.wildcard = null;
-        return;
-      }
+    const letter = wildcardSelector.getSelectedLetter();
+    if (letter) {
+      window.gameContext.wildcard.letter.letter = letter;
+      window.boardService.updateLetterAt(
+        window.gameContext.wildcard.letter.row,
+        window.gameContext.wildcard.letter.col,
+        window.gameContext.wildcard.letter
+      );
+      window.gameContext.wildcard = null;
     }
-    // If clicked outside the letter grid but inside the modal, do nothing
-    return;
   }
 
   // Check if dragging from letterbar - use direct position detection for better touch support
@@ -151,7 +128,6 @@ window.mousePressed = function () {
   // Check if dragging from grid (only liveLetters)
   if (grid.mouseIsOver() && !window.gameContext.draggedLetter) {
     const gridLetter = grid.getMouseOverLetter();
-    console.log("Grid letter under mouse:", gridLetter);
     if (gridLetter) {
       window.gameContext.draggedLetter = gridLetter;
       window.gameContext.dragSource = "grid";
@@ -214,58 +190,9 @@ window.touchMoved = function () {
   }
 };
 
-// Add to sketch.js or new wildcardSelector.js
 const renderWildcardSelector = () => {
-  if (!window.gameContext.wildcard?.selecting) return;
-
-  // Semi-transparent overlay
-  fill(0, 0, 0, 180);
-  rect(0, 0, width, height);
-
-  // White dialog box
-  const boxW = 400;
-  const boxH = 350;
-  const boxX = width / 2 - boxW / 2;
-  const boxY = height / 2 - boxH / 2;
-
-  fill(255);
-  rect(boxX, boxY, boxW, boxH, 10);
-
-  // Title
-  fill(0);
-  textSize(20);
-  textAlign(CENTER);
-  text("Select a letter for wildcard:", width / 2, boxY + 40);
-
-  // Draw letter grid (A-Z)
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".split("");
-  const cols = 7;
-  const cellSize = 40;
-  const startX = boxX + 40;
-  const startY = boxY + 80;
-
-  for (let i = 0; i < letters.length; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const x = startX + col * (cellSize + 5);
-    const y = startY + row * (cellSize + 5);
-
-    // Highlight on hover
-    if (
-      mouseX > x &&
-      mouseX < x + cellSize &&
-      mouseY > y &&
-      mouseY < y + cellSize
-    ) {
-      fill(200, 220, 255);
-      cursor(HAND);
-    } else {
-      fill(240);
-    }
-
-    rect(x, y, cellSize, cellSize, 5);
-    fill(0);
-    textSize(24);
-    text(letters[i], x + cellSize / 2, y + cellSize / 2);
+  if (!window.gameContext.wildcard?.selecting) {
+    return;
   }
+  wildcardSelector.render();
 };

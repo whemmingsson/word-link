@@ -99,7 +99,6 @@ export class Grid {
     );
   }
 
-  // Add to grid.js
   showWildcardSelector(placedLetter) {
     window.gameContext.wildcard = {
       letter: placedLetter,
