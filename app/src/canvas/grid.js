@@ -36,7 +36,21 @@ export class Grid {
 
   drawGrid() {
     // Draw lines
-    renderUtils.renderGridLines(this.rows, this.cols, this.cellSize);
+    //renderUtils.renderGridLines(this.rows, this.cols, this.cellSize);
+
+    // Render special tiles from tileConfigService
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        const tileType = window.tileConfigService.getTileTypeAt(col, row);
+
+        renderUtils.renderBoardTileAtPosition(
+          col * this.cellSize + this.cellSize / 2,
+          row * this.cellSize + this.cellSize / 2,
+          tileType,
+          this.cellSize
+        );
+      }
+    }
 
     // Highlight cell under mouse if a letter is being dragged
     renderUtils.renderShadedCellIfTileIsDragged(

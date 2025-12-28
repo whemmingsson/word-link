@@ -2,18 +2,20 @@ import { renderUtils } from "./renderUtils";
 import { styleUtils } from "./styleUtils";
 
 export class Letterbar {
-  constructor(x, y, width, height) {
+  constructor(x, y, width, cellSize) {
     this.x = x;
     this.y = y;
     this.width = width;
-    this.height = height;
     this.letters = [];
     this.lettersOnGrid = [];
+    this.padding = 10;
+    this.height = cellSize + this.padding * 2;
   }
 
   _getLetterX(index) {
     return (
       this.x +
+      this.padding +
       index * window.gameContext.cellSize * 1.5 +
       window.gameContext.cellSize / 2
     );

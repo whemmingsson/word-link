@@ -1,10 +1,11 @@
 import { Grid } from "./grid.js";
 import { Letterbar } from "./letterbar.js";
 import { renderUtils } from "./renderUtils.js";
+import { styleUtils } from "./styleUtils.js";
 
 let grid;
 let bar;
-const padding = 20;
+const margin = 20;
 const cellSize = 50;
 let initialized = false;
 
@@ -56,11 +57,11 @@ const handleCursorStyle = () => {
 
 window.setup = function () {
   grid = new Grid(15, 15, cellSize);
-  bar = new Letterbar(0, grid.getHeight() + padding, grid.getWidth(), cellSize);
+  bar = new Letterbar(0, grid.getHeight() + margin, grid.getWidth(), cellSize);
 
   createCanvas(
     grid.getWidth(),
-    grid.getHeight() + bar.getHeight() + padding
+    grid.getHeight() + bar.getHeight() + margin
   ).parent("canvas-wrapper");
 
   bar.init();
@@ -80,15 +81,12 @@ window.draw = function () {
     }
   }
 
-  background(255);
+  background(styleUtils.sketch.backgroundColor);
   grid.drawGrid();
   bar.drawLetterbar();
 
   if (window.gameContext.draggedLetter) {
-    renderUtils.renderDraggedTile(
-      window.gameContext.draggedLetter.letter,
-      cellSize
-    );
+    renderUtils.renderDraggedTile(window.gameContext.draggedLetter, cellSize);
   }
 
   handleCursorStyle();
