@@ -23,6 +23,7 @@ export class LetterPoolService {
       letter: "*",
       value: 0,
       id: Math.random() * 100000 + 99999,
+      wildCard: true,
     });
     return drawnLetters;
   }

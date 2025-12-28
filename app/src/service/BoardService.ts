@@ -5,6 +5,7 @@ interface PlacedLetter {
   col: number;
   value: number;
   isLive: boolean;
+  wildCard?: boolean;
 }
 
 export class BoardService {
@@ -26,8 +27,47 @@ export class BoardService {
   }
 
   _getNewWord() {
-    const word = this.liveLetters.map((l) => l.letter).join("");
-    return word;
+    if (this.liveLetters.length === 0) return "";
+
+    // Determine if word is horizontal (same row) or vertical (same column)
+    const allSameRow = this.liveLetters.every(
+      (l) => l.row === this.liveLetters[0].row
+    );
+
+    let wordLetters: PlacedLetter[] = [];
+
+    if (allSameRow) {
+      // Horizontal word - sort by column (left to right)
+      const row = this.liveLetters[0].row;
+      const sorted = [...this.liveLetters].sort((a, b) => a.col - b.col);
+      const minCol = sorted[0].col;
+      const maxCol = sorted[sorted.length - 1].col;
+
+      // Collect all letters from minCol to maxCol (includes live + at most 1 placed)
+      for (let col = minCol; col <= maxCol; col++) {
+        const letter = this.board[row][col];
+        if (letter) {
+          wordLetters.push(letter);
+        }
+      }
+    } else {
+      // Vertical word - sort by row (top to bottom)
+      const col = this.liveLetters[0].col;
+      const sorted = [...this.liveLetters].sort((a, b) => a.row - b.row);
+      const minRow = sorted[0].row;
+      const maxRow = sorted[sorted.length - 1].row;
+
+      // Collect all letters from minRow to maxRow (includes live + at most 1 placed)
+      for (let row = minRow; row <= maxRow; row++) {
+        const letter = this.board[row][col];
+        if (letter) {
+          wordLetters.push(letter);
+        }
+      }
+    }
+
+    // Join the letters in correct order to form the word
+    return wordLetters.map((l) => l.letter).join("");
   }
 
   isValidPlacement() {
@@ -142,7 +182,7 @@ export class BoardService {
     const word = this._getNewWord();
     console.log(
       "Finalizing move with letters:",
-      this.letters,
+      this.liveLetters,
       "forming word:",
       word
     );

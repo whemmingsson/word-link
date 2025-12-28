@@ -10,7 +10,7 @@ export const lettersConfig: LetterType[] = [
   { letter: "Å", value: 4, count: 2 },
   { letter: "E", value: 1, count: 8 },
   { letter: "T", value: 1, count: 7 },
-  { letter: "*", value: 0, count: 2 },
+  { letter: "*", value: 0, count: 2, wildCard: true },
   { letter: "L", value: 1, count: 7 },
   { letter: "A", value: 1, count: 9 },
   { letter: "F", value: 4, count: 2 },
@@ -36,9 +36,9 @@ export const lettersConfig: LetterType[] = [
 export const getLetterPool = (): LetterTile[] => {
   const pool: LetterTile[] = [];
   let idCounter = 0;
-  lettersConfig.forEach(({ letter, value, count }) => {
+  lettersConfig.forEach(({ letter, value, count, wildCard }) => {
     for (let i = 0; i < count; i++) {
-      pool.push({ letter, value, id: idCounter++ });
+      pool.push({ letter, value, id: idCounter++, wildCard });
     }
   });
   return pool;

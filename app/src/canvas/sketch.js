@@ -15,13 +15,52 @@ window.gameContext = {};
 window.gameContext.draggedLetter = false;
 window.gameContext.cellSize = cellSize;
 
+const DOM = {
+  finishMoveButton: null,
+  resetMoveButton: null,
+};
+
+const showMessage = (text, type = "error") => {
+  const messageDiv = document.createElement("div");
+  messageDiv.textContent = text;
+  messageDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    background: ${type === "error" ? "#8d0303ff" : "#008600ff"};
+    color: white;
+    border-radius: 8px;
+    font-size: 16px;
+    z-index: 10000;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  `;
+  document.body.appendChild(messageDiv);
+
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    messageDiv.style.transition = "opacity 0.5s";
+    messageDiv.style.opacity = "0";
+    setTimeout(() => messageDiv.remove(), 500);
+  }, 3000);
+};
+
 const setupActionButtons = () => {
   // Create a button to finish the move
-  const finishMoveButton = document.createElement("button");
-  finishMoveButton.innerText = "Finish Move";
-  finishMoveButton.onclick = () => {
+  DOM.finishMoveButton = document.createElement("button");
+  DOM.finishMoveButton.innerText = "Finish Move";
+  DOM.finishMoveButton.onclick = () => {
+    if (!grid.hasPlacedAnyLetters()) {
+      showMessage("No letters placed on the board.");
+      return;
+    }
     if (!grid.isValidPlacement()) {
-      alert("Invalid letter placement. Please adjust the letters on the grid.");
+      showMessage(
+        "Invalid letter placement. Please adjust the letters on the grid."
+      );
       return;
     }
     grid.finalizeMove();
@@ -32,12 +71,12 @@ const setupActionButtons = () => {
     bar.letters.push(...newLetters);
   };
 
-  document.getElementById("actions").appendChild(finishMoveButton);
+  document.getElementById("actions").appendChild(DOM.finishMoveButton);
 
   // Create a button to reset the placed live letters
-  const resetMoveButton = document.createElement("button");
-  resetMoveButton.innerText = "Reset Move";
-  resetMoveButton.onclick = () => {
+  DOM.resetMoveButton = document.createElement("button");
+  DOM.resetMoveButton.innerText = "Reset Move";
+  DOM.resetMoveButton.onclick = () => {
     // Move all live letters back to the letterbar
     grid.liveLetters.forEach((letter) => {
       bar.addLetter(letter);
@@ -45,20 +84,7 @@ const setupActionButtons = () => {
     grid.resetMove();
   };
 
-  document.getElementById("actions").appendChild(resetMoveButton);
-};
-
-const handleCursorStyle = () => {
-  // Centralized cursor logic
-  const mouseOverBarLetter = bar.getLetterAtPosition(mouseX, mouseY) !== null;
-  const gridLetter = grid.getMouseOverLetter();
-  const mouseOverLiveGridLetter = gridLetter && gridLetter.isLive;
-
-  if (mouseOverBarLetter || mouseOverLiveGridLetter) {
-    cursor(HAND);
-  } else {
-    cursor(ARROW);
-  }
+  document.getElementById("actions").appendChild(DOM.resetMoveButton);
 };
 
 window.setup = function () {
@@ -99,6 +125,32 @@ window.draw = function () {
 
   handleCursorStyle();
   renderWildcardSelector();
+  handleDom();
+};
+
+const handleCursorStyle = () => {
+  const mouseOverBarLetter = bar.getLetterAtPosition(mouseX, mouseY) !== null;
+  const gridLetter = grid.getMouseOverLetter();
+  const mouseOverLiveGridLetter = gridLetter && gridLetter.isLive;
+
+  if (mouseOverBarLetter || mouseOverLiveGridLetter) {
+    cursor(HAND);
+  } else {
+    cursor(ARROW);
+  }
+};
+
+const renderWildcardSelector = () => {
+  if (!window.gameContext.wildcard?.selecting) {
+    return;
+  }
+  wildcardSelector.render();
+};
+
+const handleDom = () => {
+  const hasPlacedLetters = grid.hasPlacedAnyLetters();
+  DOM.finishMoveButton.disabled = !hasPlacedLetters;
+  DOM.resetMoveButton.disabled = !hasPlacedLetters;
 };
 
 window.mousePressed = function () {
@@ -188,11 +240,4 @@ window.touchMoved = function () {
   if (window.gameContext.draggedLetter) {
     return false;
   }
-};
-
-const renderWildcardSelector = () => {
-  if (!window.gameContext.wildcard?.selecting) {
-    return;
-  }
-  wildcardSelector.render();
 };

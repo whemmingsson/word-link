@@ -30,10 +30,10 @@ export class Letterbar {
     stroke(styleUtils.letterBar.borderColor);
     strokeWeight(1);
     rect(this.x, this.y, this.width, this.height);
-    this.drawLetters();
+    this.renderLetters();
   }
 
-  drawLetters() {
+  renderLetters() {
     let mouseOverAnyLetter = false;
     for (let i = 0; i < this.letters.length; i++) {
       // Skip rendering if this letter is being dragged from the bar
@@ -88,6 +88,7 @@ export class Letterbar {
   init() {
     if (window.letterPoolService) {
       this.letters = window.letterPoolService.drawLetters(7);
+      console.log("Letterbar initialized with letters:", this.letters);
     }
   }
 
@@ -118,6 +119,9 @@ export class Letterbar {
   }
 
   addLetter(letter) {
+    if (letter.wildCard) {
+      letter.letter = "*";
+    }
     this.letters.push(letter);
     this.lettersOnGrid = this.lettersOnGrid.filter((l) => l !== letter);
   }

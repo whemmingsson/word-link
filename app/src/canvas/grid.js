@@ -16,6 +16,7 @@ export class Grid {
       row: row,
       col: col,
       isLive: isLive,
+      wildCard: letterObj.wildCard || false,
     };
   }
 
@@ -116,7 +117,7 @@ export class Grid {
         if (success) {
           this.liveLetters.push(normalizedLetter);
         }
-        if (letter.letter === "*") {
+        if (letter.wildCard) {
           this.showWildcardSelector(normalizedLetter);
         }
         return success;
@@ -171,5 +172,9 @@ export class Grid {
       return window.boardService.isValidPlacement();
     }
     return false;
+  }
+
+  hasPlacedAnyLetters() {
+    return this.liveLetters.length > 0;
   }
 }
