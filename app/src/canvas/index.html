@@ -13,15 +13,17 @@
     
     <script type="module">
       // Import services
-      import { dictionaryService, letterPoolService, boardService } from '../service/services';
+      import { dictionaryService, letterPoolService, boardService, tileConfigService } from '../service/services';
       // Make available globally for p5.js sketches
       window.dictionaryService = dictionaryService;
       window.letterPoolService = letterPoolService;
       window.boardService = boardService;
-
+      window.tileConfigService = tileConfigService;
       window.servicesReady = true;
       console.log("Services are ready and available globally.");
     </script>
+    <script type="module" src="./renderUtils.js"></script>
+    <script type="module" src="./styleUtils.js"></script>
     <script type="module" src="./grid.js"></script>
     <script type="module" src="./letterbar.js"></script>
     <script type="module" src="./sketch.js"></script>

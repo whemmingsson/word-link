@@ -2,3 +2,4 @@
 export { dictionaryService, DictionaryService } from "./DictionaryService";
 export { letterPoolService, LetterPoolService } from "./LetterPoolService";
 export { boardService, BoardService } from "./BoardService";
+export { tileConfigService, TileConfigService } from "./TileConfigService";

@@ -1,8 +1,15 @@
-import type { LetterTile } from "../../../common/types/LetterTile";
+interface PlacedLetter {
+  id: number;
+  letter: string;
+  row: number;
+  col: number;
+  value: number;
+  isLive: boolean;
+}
 
 export class BoardService {
-  board: LetterTile[][];
-  letters: { letter: string; row: number; col: number; value: number }[];
+  board: (PlacedLetter | null)[][];
+  letters: PlacedLetter[];
   constructor() {
     this.board = [];
     this.letters = [];
@@ -12,37 +19,34 @@ export class BoardService {
 
   initializeBoard() {
     this.board = Array.from({ length: 15 }, () =>
-      Array.from({ length: 15 }, () => ({ letter: "", value: 0 }))
+      Array.from({ length: 15 }, () => null)
     );
   }
 
-  placeLetter(row: number, col: number, letter: LetterTile): boolean {
-    if (this.board[row][col].letter === "") {
-      this.board[row][col] = letter;
-      this.letters.push({
-        letter: letter.letter,
-        row,
-        col,
-        value: letter.value,
-      });
+  placeLetter(letter: PlacedLetter): boolean {
+    if (this.board[letter.row][letter.col] === null) {
+      this.board[letter.row][letter.col] = letter;
+      this.letters.push(letter);
       return true;
     }
     return false;
   }
 
-  getBoardState(): LetterTile[][] {
+  getBoardState(): (PlacedLetter | null)[][] {
     return this.board;
   }
 
-  getPlacedLetters() {
+  getPlacedLetters(): PlacedLetter[] {
     return this.letters;
+  }
+
+  cellIsOccupied(row: number, col: number): boolean {
+    return this.board[row][col] !== null;
   }
 
   finalizeMove() {
     console.log("Finalizing move with letters:", this.letters);
-    // Here you would add logic to validate the move, update scores, etc.
-    // For now, we just clear the placed letters for the next turn.
-    this.letters = [];
+    this.letters.forEach((l) => (l.isLive = false));
   }
 
   removeLetter(row: number, col: number) {
@@ -51,7 +55,7 @@ export class BoardService {
     );
     if (letterIndex >= 0) {
       this.letters.splice(letterIndex, 1);
-      this.board[row][col] = { letter: "", value: 0 };
+      this.board[row][col] = null;
     }
   }
 }

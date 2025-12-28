@@ -35,9 +35,10 @@ export const lettersConfig: LetterType[] = [
 
 export const getLetterPool = (): LetterTile[] => {
   const pool: LetterTile[] = [];
+  let idCounter = 0;
   lettersConfig.forEach(({ letter, value, count }) => {
     for (let i = 0; i < count; i++) {
-      pool.push({ letter, value });
+      pool.push({ letter, value, id: idCounter++ });
     }
   });
   return pool;

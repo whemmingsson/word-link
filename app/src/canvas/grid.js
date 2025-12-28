@@ -1,16 +1,27 @@
+import { renderUtils } from "./renderUtils.js";
 export class Grid {
   constructor(rows, cols, cellSize) {
     this.rows = rows;
     this.cols = cols;
     this.cellSize = cellSize;
-    this.letters = [];
     this.liveLetters = [];
+  }
+
+  // Helper function to normalize letter data and prevent nesting
+  _normalizeLetter(letterObj, row, col, isLive = true) {
+    return {
+      letter: letterObj.letter,
+      value: letterObj.value || 0,
+      id: letterObj.id,
+      row: row,
+      col: col,
+      isLive: isLive,
+    };
   }
 
   _cellIsOccupied(row, col) {
     if (window.boardService) {
-      const boardState = window.boardService.getBoardState();
-      return boardState[row][col].letter !== "";
+      return window.boardService.cellIsOccupied(row, col);
     }
     return false;
   }
@@ -24,107 +35,27 @@ export class Grid {
   }
 
   drawGrid() {
-    stroke("#ccc");
-    strokeWeight(1);
+    // Draw lines
+    renderUtils.renderGridLines(this.rows, this.cols, this.cellSize);
 
-    // Draw horizontal lines
-    for (let row = 0; row <= this.rows; row++) {
-      line(
-        0,
-        row * this.cellSize,
-        this.cols * this.cellSize,
-        row * this.cellSize
-      );
-    }
+    // Highlight cell under mouse if a letter is being dragged
+    renderUtils.renderShadedCellIfTileIsDragged(
+      this.rows,
+      this.cols,
+      this.cellSize,
+      this._cellIsOccupied.bind(this)
+    );
 
-    // Draw vertical lines
-    for (let col = 0; col <= this.cols; col++) {
-      line(
-        col * this.cellSize,
-        0,
-        col * this.cellSize,
-        this.rows * this.cellSize
-      );
-    }
-
-    const mX = mouseX;
-    const mY = mouseY;
-    const col = Math.floor(mX / this.cellSize);
-    const row = Math.floor(mY / this.cellSize);
-    if (
-      col >= 0 &&
-      col < this.cols &&
-      row >= 0 &&
-      row < this.rows &&
-      window.gameContext.letterBeeingDragged &&
-      !this._cellIsOccupied(row, col)
-    ) {
-      fill("#eee");
-      rect(
-        col * this.cellSize,
-        row * this.cellSize,
-        this.cellSize,
-        this.cellSize
-      );
-    } else {
-      cursor(ARROW);
-    }
-
-    // Draw live letters (being placed this turn)
-    fill(0);
-    textSize(24);
-    textAlign(CENTER, CENTER);
-    for (let i = 0; i < this.liveLetters.length; i++) {
-      const placedLetter = this.liveLetters[i];
-
-      // Skip rendering if this letter is being dragged from the grid
+    for (const letter of window.boardService.getPlacedLetters()) {
       if (
-        window.gameContext.letterBeeingDragged &&
+        window.gameContext.draggedLetter &&
         window.gameContext.dragSource === "grid" &&
-        window.gameContext.draggedGridLetter === placedLetter
+        window.gameContext.draggedLetter.id === letter.id
       ) {
         continue;
       }
 
-      const x = placedLetter.col * this.cellSize + this.cellSize / 2;
-      const y = placedLetter.row * this.cellSize + this.cellSize / 2;
-      fill("#ffe881ff");
-      rect(
-        x - this.cellSize / 2,
-        y - this.cellSize / 2,
-        this.cellSize,
-        this.cellSize
-      );
-      fill(0);
-      text(placedLetter.letter, x, y);
-    }
-
-    // Draw placed letters from BoardService
-    if (window.boardService) {
-      fill(0);
-      textSize(24);
-      textAlign(CENTER, CENTER);
-
-      const letterTile = window.boardService.getPlacedLetters();
-
-      if (letterTile.letter !== "") {
-        // Skip rendering if this letter is being dragged from the grid
-        const isBeingDragged =
-          window.gameContext.letterBeeingDragged &&
-          window.gameContext.dragSource === "grid" &&
-          window.gameContext.draggedGridLetter &&
-          window.gameContext.draggedGridLetter.row === row &&
-          window.gameContext.draggedGridLetter.col === col;
-
-        if (isBeingDragged) {
-          return;
-        }
-
-        const x = col * this.cellSize + this.cellSize / 2;
-        const y = row * this.cellSize + this.cellSize / 2;
-        fill(0);
-        text(letterTile.letter, x, y);
-      }
+      renderUtils.renderTileWithLetter(letter, this.cellSize);
     }
   }
 
@@ -137,16 +68,17 @@ export class Grid {
   }
 
   mouseIsOver() {
-    const mX = mouseX;
-    const mY = mouseY;
-    return mX >= 0 && mX < this.getWidth() && mY >= 0 && mY < this.getHeight();
+    return (
+      mouseX >= 0 &&
+      mouseX < this.getWidth() &&
+      mouseY >= 0 &&
+      mouseY < this.getHeight()
+    );
   }
 
   canDropLetter() {
-    const mX = mouseX;
-    const mY = mouseY;
-    const col = this._getCol(mX);
-    const row = this._getRow(mY);
+    const col = this._getCol(mouseX);
+    const row = this._getRow(mouseY);
     return (
       col >= 0 &&
       col < this.cols &&
@@ -157,23 +89,14 @@ export class Grid {
   }
 
   dropLetter(letter) {
-    console.log("Dropping letter:", letter);
-    const mX = mouseX;
-    const mY = mouseY;
-    const col = this._getCol(mX);
-    const row = this._getRow(mY);
+    const col = this._getCol(mouseX);
+    const row = this._getRow(mouseY);
     if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
       if (window.boardService) {
-        const success = window.boardService.placeLetter(row, col, letter);
+        const normalizedLetter = this._normalizeLetter(letter, row, col);
+        const success = window.boardService.placeLetter(normalizedLetter);
         if (success) {
-          const placedLetter = {
-            letter: letter.letter,
-            value: letter.value,
-            row: row,
-            col: col,
-          };
-          this.letters.push(placedLetter);
-          this.liveLetters.push(placedLetter);
+          this.liveLetters.push(normalizedLetter);
         }
         return success;
       }
@@ -182,10 +105,8 @@ export class Grid {
   }
 
   getMouseOverLetter() {
-    const mX = mouseX;
-    const mY = mouseY;
-    const col = this._getCol(mX);
-    const row = this._getRow(mY);
+    const col = this._getCol(mouseX);
+    const row = this._getRow(mouseY);
     for (let i = 0; i < this.liveLetters.length; i++) {
       if (this.liveLetters[i].col === col && this.liveLetters[i].row === row) {
         return this.liveLetters[i];
@@ -199,35 +120,16 @@ export class Grid {
   }
 
   removeLetter(placedLetter) {
-    this.letters = this.letters.filter((l) => l !== placedLetter);
     this.liveLetters = this.liveLetters.filter((l) => l !== placedLetter);
 
-    // Also remove from BoardService
-    /*if (window.boardService && placedLetter) {
-      const boardState = window.boardService.getBoardState();
-      if (
-        boardState[placedLetter.row] &&
-        boardState[placedLetter.row][placedLetter.col]
-      ) {
-        boardState[placedLetter.row][placedLetter.col] = {
-          letter: "",
-          value: 0,
-        };
-      }
-    } */
+    if (window.boardService && placedLetter) {
+      window.boardService.removeLetter(placedLetter.row, placedLetter.col);
+    }
   }
 
-  finishMove() {
-    console.log(this.liveLetters);
-    // Move the live letters to permanent state in BoardService
+  finalizeMove() {
     if (window.boardService) {
-      for (let i = 0; i < this.liveLetters.length; i++) {
-        const placedLetter = this.liveLetters[i];
-        window.boardService.finalizeLetterPlacement(
-          placedLetter.row,
-          placedLetter.col
-        );
-      }
+      window.boardService.finalizeMove();
     }
     this.lockLetters();
   }
