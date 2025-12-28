@@ -170,43 +170,22 @@ const renderLetterTileAtPosition = (letter, x, y, cellSize) => {
 };
 
 const renderBoardTileAtPosition = (x, y, tile, cellSize) => {
-  let tileColor = "";
-  let tileText = "";
+  const tileConfig =
+    styleUtils.grid.specialTiles[tile] || styleUtils.grid.specialTiles[0];
 
-  switch (tile) {
-    case 0: // Empty
-      stroke(0);
-      renderSquare(
-        x - cellSize / 2,
-        y - cellSize / 2,
-        cellSize,
-        styleUtils.grid.fillColor
-      );
-      return;
-
-    case 1: // DoubleLetter
-      tileColor = "#3a4a58"; // Dark blue-gray
-      tileText = "DL";
-      break;
-    case 2: // TripleLetter
-      tileColor = "#2a3844"; // Darker gray-blue
-      tileText = "TL";
-      break;
-    case 3: // DoubleWord
-      tileColor = "#4a4238"; // Dark warm gray
-      tileText = "DW";
-      break;
-    case 4: // TripleWord
-      tileColor = "#3a2e24"; // Darker warm brown-gray
-      tileText = "TW";
-      break;
-    default:
-      tileColor = "#999999"; // Fallback gray
-      tileText = "";
+  if (tile === 0) {
+    stroke(0);
+    renderSquare(
+      x - cellSize / 2,
+      y - cellSize / 2,
+      cellSize,
+      styleUtils.grid.fillColor
+    );
+    return;
   }
 
-  renderSquare(x - cellSize / 2, y - cellSize / 2, cellSize, tileColor);
-  renderText(tileText, x, y, styleUtils.grid.cell.textColor, 18);
+  renderSquare(x - cellSize / 2, y - cellSize / 2, cellSize, tileConfig.color);
+  renderText(tileConfig.text, x, y, styleUtils.grid.cell.textColor, 18);
 };
 
 export const renderUtils = {

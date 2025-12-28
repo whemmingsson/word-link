@@ -8,7 +8,7 @@ export class Letterbar {
     this.width = width;
     this.letters = [];
     this.lettersOnGrid = [];
-    this.padding = 10;
+    this.padding = 20;
     this.height = cellSize + this.padding * 2;
   }
 

@@ -20,7 +20,14 @@ export const styleUtils = {
       shaded: {
         fillColor: "#eeeeeec2",
       },
-      textColor: "#dfdfdfff",
+      textColor: "#ffffffff",
+    },
+    specialTiles: {
+      0: { color: "#2a2a2a", text: "" }, // Empty
+      1: { color: "#3a4a58", text: "DL" }, // DoubleLetter - Dark blue-gray
+      2: { color: "#2a3844", text: "TL" }, // TripleLetter - Darker gray-blue
+      3: { color: "#4a4238", text: "DW" }, // DoubleWord - Dark warm gray
+      4: { color: "#3a2e24", text: "TW" }, // TripleWord - Darker warm brown-gray
     },
   },
 };
