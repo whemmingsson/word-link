@@ -18,6 +18,10 @@ const setupActionButtons = () => {
   const finishMoveButton = document.createElement("button");
   finishMoveButton.innerText = "Finish Move";
   finishMoveButton.onclick = () => {
+    if (!grid.isValidPlacement()) {
+      alert("Invalid letter placement. Please adjust the letters on the grid.");
+      return;
+    }
     grid.finalizeMove();
     // Add new letters to the letterbar to replenish it
     const newLetters = window.letterPoolService.drawLetters(

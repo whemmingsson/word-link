@@ -166,4 +166,11 @@ export class Grid {
     }
     this.liveLetters = [];
   }
+
+  isValidPlacement() {
+    if (window.boardService) {
+      return window.boardService.isValidPlacement();
+    }
+    return false;
+  }
 }
