@@ -58,6 +58,13 @@ export class BoardService {
       this.board[row][col] = null;
     }
   }
+
+  updateLetterAt(row: number, col: number, newLetter: PlacedLetter) {
+    const letter = this.board[row][col];
+    if (letter) {
+      letter.letter = newLetter.letter;
+    }
+  }
 }
 
 export const boardService = new BoardService();

@@ -35,9 +35,6 @@ export class Grid {
   }
 
   drawGrid() {
-    // Draw lines
-    //renderUtils.renderGridLines(this.rows, this.cols, this.cellSize);
-
     // Render special tiles from tileConfigService
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
@@ -102,6 +99,14 @@ export class Grid {
     );
   }
 
+  // Add to grid.js
+  showWildcardSelector(placedLetter) {
+    window.gameContext.wildcard = {
+      letter: placedLetter,
+      selecting: true,
+    };
+  }
+
   dropLetter(letter) {
     const col = this._getCol(mouseX);
     const row = this._getRow(mouseY);
@@ -111,6 +116,9 @@ export class Grid {
         const success = window.boardService.placeLetter(normalizedLetter);
         if (success) {
           this.liveLetters.push(normalizedLetter);
+        }
+        if (letter.letter === "*") {
+          this.showWildcardSelector(normalizedLetter);
         }
         return success;
       }
