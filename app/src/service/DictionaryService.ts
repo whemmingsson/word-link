@@ -21,6 +21,25 @@ export class DictionaryService {
     this.cache.set(upperWord, result);
     return result;
   }
+
+  validateWords(words: string[]): {
+    valid: string[];
+    invalid: string[];
+    allValid: boolean;
+  } {
+    let allValid = true;
+    const valid: string[] = [];
+    const invalid: string[] = [];
+    for (const word of words) {
+      if (this.hasWord(word)) {
+        valid.push(word);
+      } else {
+        invalid.push(word);
+        allValid = false;
+      }
+    }
+    return { allValid, valid, invalid };
+  }
 }
 
 // Singleton instance - created once on app load

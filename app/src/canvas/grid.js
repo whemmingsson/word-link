@@ -187,8 +187,20 @@ export class Grid {
   isValidWord() {
     if (window.boardService) {
       const word = this.getPlacedWord();
-      console.log("Checking validity of word:", word);
+      console.log(`Validating placed word: "${word}"`);
       return window.dictionaryService.hasWord(word);
+    }
+    return false;
+  }
+
+  validateAllWords() {
+    if (window.boardService) {
+      const allWords = window.boardService.getAllWords();
+      const words = Array.from(allWords).map((w) => w.getWord());
+      if (window.dictionaryService) {
+        const validationResult = window.dictionaryService.validateWords(words);
+        return validationResult.allValid;
+      }
     }
     return false;
   }

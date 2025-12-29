@@ -8,6 +8,26 @@ interface PlacedLetter {
   wildCard?: boolean;
 }
 
+export class Word {
+  letters: PlacedLetter[];
+
+  constructor(letters: PlacedLetter[]) {
+    this.letters = letters;
+  }
+
+  getWord(): string {
+    return this.letters.map((l) => l.letter).join("");
+  }
+
+  getScore(): number {
+    return this.letters.reduce((acc, letter) => acc + letter.value, 0);
+  }
+
+  includeInScoring() {
+    return this.letters.some((l) => l.isLive);
+  }
+}
+
 export class BoardService {
   board: (PlacedLetter | null)[][];
   letters: PlacedLetter[];
@@ -26,8 +46,77 @@ export class BoardService {
     );
   }
 
+  _scoreWord(): number {
+    if (!this.liveLetters.length) return 0;
+    return this.liveLetters.reduce((acc, letter) => acc + letter.value, 0);
+  }
+
   _getNewWord() {
     if (this.liveLetters.length === 0) return "";
+
+    // Special case: if there's only 1 live letter, determine direction by checking for adjacent letters
+    if (this.liveLetters.length === 1) {
+      const letter = this.liveLetters[0];
+      const row = letter.row;
+      const col = letter.col;
+
+      // Check for horizontal adjacent letters (left or right)
+      const hasHorizontalAdjacent =
+        (col > 0 && this.board[row][col - 1] !== null) ||
+        (col < 14 && this.board[row][col + 1] !== null);
+
+      // Check for vertical adjacent letters (up or down)
+      const hasVerticalAdjacent =
+        (row > 0 && this.board[row - 1][col] !== null) ||
+        (row < 14 && this.board[row + 1][col] !== null);
+
+      // Determine direction based on adjacent letters
+      // If both directions have adjacent letters, prefer vertical (but this shouldn't happen in valid placement)
+      const shouldExpandVertically = hasVerticalAdjacent;
+      const shouldExpandHorizontally =
+        hasHorizontalAdjacent && !hasVerticalAdjacent;
+
+      if (shouldExpandHorizontally) {
+        // Force horizontal expansion
+        let minCol = col;
+        let maxCol = col;
+
+        while (minCol > 0 && this.board[row][minCol - 1] !== null) {
+          minCol--;
+        }
+        while (maxCol < 14 && this.board[row][maxCol + 1] !== null) {
+          maxCol++;
+        }
+
+        const wordLetters: PlacedLetter[] = [];
+        for (let c = minCol; c <= maxCol; c++) {
+          const l = this.board[row][c];
+          if (l) wordLetters.push(l);
+        }
+        return wordLetters.map((l) => l.letter).join("");
+      } else if (shouldExpandVertically) {
+        // Force vertical expansion
+        let minRow = row;
+        let maxRow = row;
+
+        while (minRow > 0 && this.board[minRow - 1][col] !== null) {
+          minRow--;
+        }
+        while (maxRow < 14 && this.board[maxRow + 1][col] !== null) {
+          maxRow++;
+        }
+
+        const wordLetters: PlacedLetter[] = [];
+        for (let r = minRow; r <= maxRow; r++) {
+          const l = this.board[r][col];
+          if (l) wordLetters.push(l);
+        }
+        return wordLetters.map((l) => l.letter).join("");
+      } else {
+        // No adjacent letters - just return the single letter
+        return letter.letter;
+      }
+    }
 
     // Determine if word is horizontal (same row) or vertical (same column)
     const allSameRow = this.liveLetters.every(
@@ -37,13 +126,23 @@ export class BoardService {
     let wordLetters: PlacedLetter[] = [];
 
     if (allSameRow) {
-      // Horizontal word - sort by column (left to right)
+      // Horizontal word
       const row = this.liveLetters[0].row;
       const sorted = [...this.liveLetters].sort((a, b) => a.col - b.col);
-      const minCol = sorted[0].col;
-      const maxCol = sorted[sorted.length - 1].col;
+      let minCol = sorted[0].col;
+      let maxCol = sorted[sorted.length - 1].col;
 
-      // Collect all letters from minCol to maxCol (includes live + at most 1 placed)
+      // Expand left to find the start of the word
+      while (minCol > 0 && this.board[row][minCol - 1] !== null) {
+        minCol--;
+      }
+
+      // Expand right to find the end of the word
+      while (maxCol < 14 && this.board[row][maxCol + 1] !== null) {
+        maxCol++;
+      }
+
+      // Collect all letters from minCol to maxCol
       for (let col = minCol; col <= maxCol; col++) {
         const letter = this.board[row][col];
         if (letter) {
@@ -51,13 +150,23 @@ export class BoardService {
         }
       }
     } else {
-      // Vertical word - sort by row (top to bottom)
+      // Vertical word
       const col = this.liveLetters[0].col;
       const sorted = [...this.liveLetters].sort((a, b) => a.row - b.row);
-      const minRow = sorted[0].row;
-      const maxRow = sorted[sorted.length - 1].row;
+      let minRow = sorted[0].row;
+      let maxRow = sorted[sorted.length - 1].row;
 
-      // Collect all letters from minRow to maxRow (includes live + at most 1 placed)
+      // Expand up to find the start of the word
+      while (minRow > 0 && this.board[minRow - 1][col] !== null) {
+        minRow--;
+      }
+
+      // Expand down to find the end of the word
+      while (maxRow < 14 && this.board[maxRow + 1][col] !== null) {
+        maxRow++;
+      }
+
+      // Collect all letters from minRow to maxRow
       for (let row = minRow; row <= maxRow; row++) {
         const letter = this.board[row][col];
         if (letter) {
@@ -179,13 +288,6 @@ export class BoardService {
   }
 
   finalizeMove() {
-    const word = this._getNewWord();
-    console.log(
-      "Finalizing move with letters:",
-      this.liveLetters,
-      "forming word:",
-      word
-    );
     this.letters.forEach((l) => (l.isLive = false));
     this.liveLetters = [];
   }
@@ -212,6 +314,68 @@ export class BoardService {
 
   getPlacedWord(): string {
     return this._getNewWord();
+  }
+
+  getAllWords(): Set<Word> {
+    const words = new Set<Word>();
+
+    // Scan horizontally (left to right)
+    for (let row = 0; row < 15; row++) {
+      let currentWord: PlacedLetter[] = [];
+
+      for (let col = 0; col < 15; col++) {
+        const letter = this.board[row][col];
+
+        if (letter !== null) {
+          currentWord.push(letter);
+        } else {
+          // Empty cell - finalize current word if it has 2+ letters
+          if (currentWord.length >= 2) {
+            words.add(new Word(currentWord));
+          }
+          currentWord = [];
+        }
+      }
+
+      // End of row - finalize current word if it has 2+ letters
+      if (currentWord.length >= 2) {
+        words.add(new Word(currentWord));
+      }
+    }
+
+    // Scan vertically (top to bottom)
+    for (let col = 0; col < 15; col++) {
+      let currentWord: PlacedLetter[] = [];
+
+      for (let row = 0; row < 15; row++) {
+        const letter = this.board[row][col];
+
+        if (letter !== null) {
+          currentWord.push(letter);
+        } else {
+          // Empty cell - finalize current word if it has 2+ letters
+          if (currentWord.length >= 2) {
+            words.add(new Word(currentWord));
+          }
+          currentWord = [];
+        }
+      }
+
+      // End of column - finalize current word if it has 2+ letters
+      if (currentWord.length >= 2) {
+        words.add(new Word(currentWord));
+      }
+    }
+
+    // Debug logging
+    console.log("All words found on board:");
+    words.forEach((word) => {
+      console.log(
+        `  Word: "${word.getWord()}", Score: ${word.getScore()}, Include in scoring: ${word.includeInScoring()}`
+      );
+    });
+
+    return words;
   }
 }
 

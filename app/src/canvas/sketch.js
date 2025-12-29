@@ -36,9 +36,17 @@ const setupActionButtons = () => {
       );
       return;
     }
-    const placedWord = grid.getPlacedWord();
     if (!grid.isValidWord()) {
-      showMessage(`The word "${placedWord}" is not valid. Please try again.`);
+      showMessage(
+        `The word "${grid.getPlacedWord()}" is not valid. Please try again.`
+      );
+      return;
+    }
+    const allWordsValid = grid.validateAllWords();
+    if (!allWordsValid) {
+      showMessage(
+        "One or more formed words are not valid. Please adjust your placement."
+      );
       return;
     }
     grid.finalizeMove();
