@@ -29,7 +29,8 @@ const setupActionButtons = () => {
   // Create a button to finish the move
   DOM.finishMoveButton = document.createElement("button");
   DOM.finishMoveButton.innerText = translate("play");
-  DOM.finishMoveButton.onclick = () => {
+
+  const finishMoveHandler = () => {
     if (!grid.hasPlacedAnyLetters()) {
       showMessage(translate("no_letters_placed"));
       return;
@@ -56,12 +57,19 @@ const setupActionButtons = () => {
     bar.letters.push(...newLetters);
   };
 
+  DOM.finishMoveButton.onclick = finishMoveHandler;
+  DOM.finishMoveButton.ontouchend = (e) => {
+    e.preventDefault();
+    finishMoveHandler();
+  };
+
   document.getElementById("actions").appendChild(DOM.finishMoveButton);
 
   // Create a button to reset the placed live letters
   DOM.resetMoveButton = document.createElement("button");
   DOM.resetMoveButton.innerText = translate("reset");
-  DOM.resetMoveButton.onclick = () => {
+
+  const resetHandler = () => {
     // Move all live letters back to the letterbar
     grid.liveLetters.forEach((letter) => {
       bar.addLetter(letter);
@@ -69,13 +77,26 @@ const setupActionButtons = () => {
     grid.resetMove();
   };
 
+  DOM.resetMoveButton.onclick = resetHandler;
+  DOM.resetMoveButton.ontouchend = (e) => {
+    e.preventDefault();
+    resetHandler();
+  };
+
   document.getElementById("actions").appendChild(DOM.resetMoveButton);
 
   // Create a button to shuffle letters in the letterbar
   DOM.shuffleButton = document.createElement("button");
   DOM.shuffleButton.innerText = translate("shuffle");
-  DOM.shuffleButton.onclick = () => {
+
+  const shuffleHandler = () => {
     bar.shuffleLetters();
+  };
+
+  DOM.shuffleButton.onclick = shuffleHandler;
+  DOM.shuffleButton.ontouchend = (e) => {
+    e.preventDefault();
+    shuffleHandler();
   };
 
   document.getElementById("actions").appendChild(DOM.shuffleButton);
