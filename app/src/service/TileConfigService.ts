@@ -1,10 +1,7 @@
 import { makeTileMap } from "../config/tileConfig";
 
 export class TileConfigService {
-  tileMap: Record<
-    string,
-    import("d:/Projects/word-link/app/src/types/tile").Tile
-  >;
+  tileMap: Record<string, import("../types/tile").Tile>;
   constructor() {
     this.tileMap = makeTileMap();
   }
