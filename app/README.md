@@ -1,73 +1,93 @@
-# React + TypeScript + Vite
+# Word Link
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A word game application built with TypeScript, p5.js, and Vite. Players place letter tiles on a 15x15 grid to form valid words, similar to Scrabble.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Interactive Game Board**: 15x15 grid for placing letter tiles
+- **Letter Pool System**: Draw letters from a managed pool with configurable distributions
+- **Dictionary Validation**: Real-time word validation against a dictionary
+- **Visual Interface**: Built with p5.js for smooth graphics and interactions
+- **Tile Configuration**: Customizable letter values and special tile types
+- **Wildcard Support**: Select letters for wildcard tiles
+- **QR Code Integration**: Generate QR codes for game sharing
 
-## React Compiler
+## Project Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+app/
+├── src/
+│   ├── canvas/          # p5.js rendering and UI logic
+│   │   ├── sketch.js    # Main p5.js sketch
+│   │   ├── grid.js      # Game grid implementation
+│   │   ├── letterbar.js # Letter tile bar
+│   │   └── ...
+│   ├── service/         # Core game services
+│   │   ├── BoardService.ts
+│   │   ├── DictionaryService.ts
+│   │   ├── LetterPoolService.ts
+│   │   └── TileConfigService.ts
+│   ├── config/          # Game configuration
+│   ├── types/           # TypeScript type definitions
+│   ├── utils/           # Utility functions
+│   └── webrtc/          # WebRTC functionality
+├── index.html           # Application entry point
+└── vite.config.ts       # Vite configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js
+- pnpm
+
+### Installation
+
+```bash
+pnpm install
 ```
+
+### Development Server
+
+```bash
+# Local development
+pnpm dev
+
+# Development with network access
+pnpm dev:network
+```
+
+### Build
+
+```bash
+pnpm build
+```
+
+The production build outputs to the `dist/` folder with relative paths for easy deployment.
+
+### Preview Production Build
+
+```bash
+pnpm preview
+```
+
+### Linting
+
+```bash
+pnpm lint
+```
+
+## Technologies
+
+- **TypeScript**: Type-safe game logic
+- **p5.js**: Canvas-based rendering and interactions
+- **Vite**: Fast build tool and dev server
+- **QRCode**: QR code generation
+
+## Game Services
+
+- **BoardService**: Manages the game board state, letter placement, and word validation
+- **DictionaryService**: Validates words against a dictionary
+- **LetterPoolService**: Manages the pool of available letters
+- **TileConfigService**: Handles tile configurations and special tiles

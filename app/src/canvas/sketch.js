@@ -3,6 +3,7 @@ import { Letterbar } from "./letterbar.js";
 import { renderUtils } from "./renderUtils.js";
 import { styleUtils } from "./styleUtils.js";
 import { WildcardSelector } from "./wildcardSelector.js";
+import { showMessage } from "./messageBox.js";
 
 let grid;
 let bar;
@@ -18,34 +19,6 @@ window.gameContext.cellSize = cellSize;
 const DOM = {
   finishMoveButton: null,
   resetMoveButton: null,
-};
-
-const showMessage = (text, type = "error") => {
-  const messageDiv = document.createElement("div");
-  messageDiv.textContent = text;
-  messageDiv.style.cssText = `
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 30px;
-    background: ${type === "error" ? "#8d0303ff" : "#008600ff"};
-    color: white;
-    border-radius: 8px;
-    font-size: 16px;
-    z-index: 10000;
-    font-weight: bold;
-    font-family: Arial, sans-serif;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  `;
-  document.body.appendChild(messageDiv);
-
-  // Auto-remove after 3 seconds
-  setTimeout(() => {
-    messageDiv.style.transition = "opacity 0.5s";
-    messageDiv.style.opacity = "0";
-    setTimeout(() => messageDiv.remove(), 500);
-  }, 3000);
 };
 
 const setupActionButtons = () => {
