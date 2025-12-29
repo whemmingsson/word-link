@@ -1,5 +1,5 @@
 import { getLetterPool } from "../config/letterConfig";
-import type { LetterTile } from "d:/Projects/word-link/common/types/LetterTile";
+import type { LetterTile } from "../types/LetterTile";
 
 export class LetterPoolService {
   letterPool: LetterTile[];

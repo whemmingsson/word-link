@@ -1,5 +1,5 @@
-import type { LetterType } from "../../../common/types/LetterType";
-import type { LetterTile } from "../../../common/types/LetterTile";
+import type { LetterType } from "../types/LetterType";
+import type { LetterTile } from "../types/LetterTile";
 
 export const lettersConfig: LetterType[] = [
   { letter: "D", value: 1, count: 7 },

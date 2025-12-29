@@ -1,6 +1,6 @@
-import { words } from "../../../data/words_filtered";
-import { buildTree, hasWord } from "../../../common/utils/treeUtils";
-import type { Node } from "../../../common/types/Node";
+import { words } from "../data/words_filtered";
+import { buildTree, hasWord } from "../utils/treeUtils";
+import type { Node } from "../types/Node";
 
 export class DictionaryService {
   dictionary: Node;
