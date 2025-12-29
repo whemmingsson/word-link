@@ -11,6 +11,8 @@ A word game application built with TypeScript, p5.js, and Vite. Players place le
 - **Tile Configuration**: Customizable letter values and special tile types
 - **Wildcard Support**: Select letters for wildcard tiles
 - **QR Code Integration**: Generate QR codes for game sharing
+- **Offline Support**: Service Worker enables offline gameplay after initial load
+- **Progressive Web App**: Can be installed as a standalone app on supported devices
 
 ## Project Structure
 
@@ -77,6 +79,23 @@ pnpm preview
 ```bash
 pnpm lint
 ```
+
+## Offline Support
+
+This app includes a Service Worker that enables offline functionality:
+
+- **First Load**: When you first visit the app, all assets are cached automatically
+- **Offline Access**: After the initial load, the app works completely offline
+- **Auto-Updates**: The service worker checks for updates periodically
+- **PWA Ready**: Can be installed as a standalone app on mobile and desktop
+
+The service worker automatically caches:
+
+- All bundled JavaScript and CSS assets
+- The main HTML file
+- External dependencies (like p5.js from CDN)
+
+To clear the cache and force a refresh, open DevTools > Application > Storage > Clear site data.
 
 ## Technologies
 
