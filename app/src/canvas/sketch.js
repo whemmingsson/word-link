@@ -104,7 +104,8 @@ const setupActionButtons = () => {
   // Create a button to switch out some letters in the letterbar
   DOM.switchButton = document.createElement("button");
   DOM.switchButton.innerText = translate("switch_letters");
-  DOM.switchButton.onclick = () => {
+
+  const switchHandler = () => {
     if (!window.gameContext.switchLetters) {
       window.gameContext.switchLetters = true;
     } else {
@@ -113,6 +114,12 @@ const setupActionButtons = () => {
       }
       window.gameContext.switchLetters = false;
     }
+  };
+
+  DOM.switchButton.onclick = switchHandler;
+  DOM.switchButton.ontouchend = (e) => {
+    e.preventDefault();
+    switchHandler();
   };
 
   document.getElementById("actions").appendChild(DOM.switchButton);
