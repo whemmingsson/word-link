@@ -177,4 +177,19 @@ export class Grid {
   hasPlacedAnyLetters() {
     return this.liveLetters.length > 0;
   }
+
+  getPlacedWord() {
+    if (window.boardService) {
+      return window.boardService.getPlacedWord();
+    }
+  }
+
+  isValidWord() {
+    if (window.boardService) {
+      const word = this.getPlacedWord();
+      console.log("Checking validity of word:", word);
+      return window.dictionaryService.hasWord(word);
+    }
+    return false;
+  }
 }

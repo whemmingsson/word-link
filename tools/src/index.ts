@@ -6,6 +6,7 @@ import { buildTree, countNodes, hasWord } from "../../common/utils/treeUtils";
 
 const main = async () => {
   console.log(`Word list path: ${config.wordListPath}`);
+  await filter(`${config.wordListPath}`);
 
   const words = await readFileAsLines(`${config.wordListPathFiltered!}`);
   writeAsJsVariable(

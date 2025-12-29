@@ -6,7 +6,7 @@ const filterFunc = (word: string) => {
   if (word.indexOf("-") >= 0) return false;
   if (word.indexOf("'") >= 0) return false;
   if (word.indexOf(".") >= 0) return false;
-  if (word.length < 3) return false;
+  if (word.length < 2) return false;
   if (word.length > 15) return false;
   return true;
 };

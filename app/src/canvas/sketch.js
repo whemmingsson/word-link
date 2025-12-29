@@ -36,6 +36,11 @@ const setupActionButtons = () => {
       );
       return;
     }
+    const placedWord = grid.getPlacedWord();
+    if (!grid.isValidWord()) {
+      showMessage(`The word "${placedWord}" is not valid. Please try again.`);
+      return;
+    }
     grid.finalizeMove();
     // Add new letters to the letterbar to replenish it
     const newLetters = window.letterPoolService.drawLetters(

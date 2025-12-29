@@ -209,6 +209,10 @@ export class BoardService {
       letter.letter = newLetter.letter;
     }
   }
+
+  getPlacedWord(): string {
+    return this._getNewWord();
+  }
 }
 
 export const boardService = new BoardService();
