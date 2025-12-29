@@ -18,10 +18,9 @@ export const showMessage = (text, type = "error") => {
   `;
   document.body.appendChild(messageDiv);
 
-  // Auto-remove after 3 seconds
   setTimeout(() => {
     messageDiv.style.transition = "opacity 0.5s";
     messageDiv.style.opacity = "0";
     setTimeout(() => messageDiv.remove(), 500);
-  }, 3000);
+  }, 2000);
 };

@@ -8,21 +8,25 @@
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.min.js"></script>
 </head>
 <body>
+    <div id="game-stats"></div>
     <div id="canvas-wrapper"></div>
     <div id="actions"></div>
     
     <script type="module">
       // Import services
-      import { dictionaryService, letterPoolService, boardService, tileConfigService } from './src/service/services';
+      import { dictionaryService, letterPoolService, boardService, tileConfigService, translationService, gameService } from './src/service/services';
       // Make available globally for p5.js sketches
       window.dictionaryService = dictionaryService;
       window.letterPoolService = letterPoolService;
       window.boardService = boardService;
       window.tileConfigService = tileConfigService;
+      window.translationService = translationService;
+      window.gameService = gameService;
       window.servicesReady = true;
       console.log("Services are ready and available globally.");
     </script>
     <script type="module" src="./src/canvas/renderUtils.js"></script>
+    <script type="module" src="./src/canvas/translationUtils.js"></script>
     <script type="module" src="./src/canvas/styleUtils.js"></script>
     <script type="module" src="./src/canvas/grid.js"></script>
     <script type="module" src="./src/canvas/letterbar.js"></script>

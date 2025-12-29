@@ -34,8 +34,8 @@ const renderLetterTile = (
   // Draw main tile
   if (borderColor) {
     stroke(borderColor);
-    strokeWeight(borderWidth);
   }
+  strokeWeight(borderWidth);
   fill(fillColor);
   rect(
     tileX + borderWidth,
@@ -131,23 +131,7 @@ const renderTileWithLetter = (letter, cellSize) => {
   );
 };
 
-const renderShadow = (x, y, cellSize) => {
-  // Draw shadow
-  const shadowOffset = 3;
-  const borderRadius = 5;
-  noStroke();
-  fill("#ffffff62");
-  rect(
-    x - cellSize / 2 + shadowOffset,
-    y - cellSize / 2 + shadowOffset,
-    cellSize,
-    cellSize,
-    borderRadius
-  );
-};
-
 const renderDraggedTile = (letter, cellSize) => {
-  //renderShadow(mouseX, mouseY, cellSize);
   renderLetterTile(
     letter,
     mouseX,
@@ -188,6 +172,22 @@ const renderBoardTileAtPosition = (x, y, tile, cellSize) => {
   renderText(tileConfig.text, x, y, styleUtils.grid.cell.textColor, 18);
 };
 
+const renderLetterHighlightAtPosition = (x, y, cellSize) => {
+  const strokeWeightValue = 4;
+  const borderRadius = 5;
+  noFill();
+  stroke(styleUtils.letterBar.markedLetterBorderColor);
+  strokeWeight(strokeWeightValue);
+  rect(
+    x - cellSize / 2 + strokeWeightValue / 2,
+    y - cellSize / 2 + strokeWeightValue / 2,
+    cellSize - strokeWeightValue,
+    cellSize - strokeWeightValue,
+    borderRadius
+  );
+  styleUtils.resetStyles();
+};
+
 export const renderUtils = {
   renderGridLines,
   renderShadedCellIfTileIsDragged,
@@ -195,4 +195,5 @@ export const renderUtils = {
   renderDraggedTile,
   renderLetterTileAtPosition,
   renderBoardTileAtPosition,
+  renderLetterHighlightAtPosition,
 };

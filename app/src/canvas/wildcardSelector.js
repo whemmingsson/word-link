@@ -1,3 +1,4 @@
+import { translate } from "./translationUtils.js";
 export class WildcardSelector {
   constructor() {
     this.letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".split("");
@@ -33,7 +34,7 @@ export class WildcardSelector {
     fill(0);
     textSize(20);
     textAlign(CENTER);
-    text("Select a letter for wildcard:", width / 2, this.y + 40);
+    text(translate("select_letter"), width / 2, this.y + 40);
 
     // Draw letter grid (A-Z)
     for (let i = 0; i < this.letters.length; i++) {

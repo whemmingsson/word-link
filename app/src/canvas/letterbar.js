@@ -10,6 +10,7 @@ export class Letterbar {
     this.lettersOnGrid = [];
     this.padding = 20;
     this.height = cellSize + this.padding * 2;
+    this.markedLettersIndices = [];
   }
 
   _getLetterX(index) {
@@ -34,7 +35,6 @@ export class Letterbar {
   }
 
   renderLetters() {
-    let mouseOverAnyLetter = false;
     for (let i = 0; i < this.letters.length; i++) {
       // Skip rendering if this letter is being dragged from the bar
       if (
@@ -48,21 +48,24 @@ export class Letterbar {
       const x = this._getLetterX(i);
       const y = this._getLetterY();
 
-      if (
-        mouseX > x - window.gameContext.cellSize / 2 &&
-        mouseX < x + window.gameContext.cellSize / 2 &&
-        mouseY > y - window.gameContext.cellSize / 2 &&
-        mouseY < y + window.gameContext.cellSize / 2
-      ) {
-        mouseOverAnyLetter = true;
-      }
-
       renderUtils.renderLetterTileAtPosition(
         this.letters[i],
         x,
         y,
         window.gameContext.cellSize
       );
+
+      // Highlight if marked
+      if (
+        window.gameContext.switchLetters &&
+        this.markedLettersIndices.includes(i)
+      ) {
+        renderUtils.renderLetterHighlightAtPosition(
+          x,
+          y,
+          window.gameContext.cellSize
+        );
+      }
     }
   }
 
@@ -88,7 +91,6 @@ export class Letterbar {
   init() {
     if (window.letterPoolService) {
       this.letters = window.letterPoolService.drawLetters(7);
-      console.log("Letterbar initialized with letters:", this.letters);
     }
   }
 
@@ -124,5 +126,38 @@ export class Letterbar {
     }
     this.letters.push(letter);
     this.lettersOnGrid = this.lettersOnGrid.filter((l) => l !== letter);
+  }
+
+  shuffleLetters() {
+    for (let i = this.letters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.letters[i], this.letters[j]] = [this.letters[j], this.letters[i]];
+    }
+  }
+
+  toggleMarkLetterAtIndex(index) {
+    const markIndex = this.markedLettersIndices.indexOf(index);
+    if (markIndex === -1) {
+      this.markedLettersIndices.push(index);
+    } else {
+      this.markedLettersIndices.splice(markIndex, 1);
+    }
+  }
+
+  switchMarkedLetters() {
+    if (this.markedLettersIndices.length < 1) {
+      return;
+    }
+    const lettersToSwitch = this.markedLettersIndices.map(
+      (i) => this.letters[i]
+    );
+    const newLetters = window.letterPoolService.switchLetters(lettersToSwitch);
+    this.letters = this.letters.filter((l) => !lettersToSwitch.includes(l));
+    this.letters.push(...newLetters);
+    this.markedLettersIndices = [];
+  }
+
+  hasMarkedLetters() {
+    return this.markedLettersIndices.length > 0;
   }
 }

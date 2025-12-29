@@ -1,3 +1,5 @@
+import { translate } from "./translationUtils.js";
+
 export const styleUtils = {
   sketch: {
     backgroundColor: "#000000f0",
@@ -12,6 +14,7 @@ export const styleUtils = {
   letterBar: {
     backgroundColor: "#383838ff",
     borderColor: "#ccccccff",
+    markedLetterBorderColor: "#ffcc00ff",
   },
   grid: {
     fillColor: "#1b1b1bf0",
@@ -23,11 +26,17 @@ export const styleUtils = {
       textColor: "#ffffffff",
     },
     specialTiles: {
-      0: { color: "#2a2a2a", text: "" }, // Empty
-      1: { color: "#3a4a58", text: "DL" }, // DoubleLetter - Dark blue-gray
-      2: { color: "#2a3844", text: "TL" }, // TripleLetter - Darker gray-blue
-      3: { color: "#4a4238", text: "DW" }, // DoubleWord - Dark warm gray
-      4: { color: "#3a2e24", text: "TW" }, // TripleWord - Darker warm brown-gray
+      0: { color: "#2a2a2a", text: "" },
+      1: { color: "#3a4a58", text: translate("DL") },
+      2: { color: "#2a3844", text: translate("TL") },
+      3: { color: "#4a4238", text: translate("DW") },
+      4: { color: "#3a2e24", text: translate("TW") },
     },
+  },
+
+  resetStyles() {
+    noFill();
+    strokeWeight(2);
+    noStroke();
   },
 };

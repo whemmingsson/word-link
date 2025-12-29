@@ -4,6 +4,7 @@ import { renderUtils } from "./renderUtils.js";
 import { styleUtils } from "./styleUtils.js";
 import { WildcardSelector } from "./wildcardSelector.js";
 import { showMessage } from "./messageBox.js";
+import { translate, translateFormatted } from "./translationUtils.js";
 
 let grid;
 let bar;
@@ -19,38 +20,36 @@ window.gameContext.cellSize = cellSize;
 const DOM = {
   finishMoveButton: null,
   resetMoveButton: null,
+  shuffleButton: null,
+  switchButton: null,
+  scoreLabel: null,
 };
 
 const setupActionButtons = () => {
   // Create a button to finish the move
   DOM.finishMoveButton = document.createElement("button");
-  DOM.finishMoveButton.innerText = "Finish Move";
+  DOM.finishMoveButton.innerText = translate("play");
   DOM.finishMoveButton.onclick = () => {
     if (!grid.hasPlacedAnyLetters()) {
-      showMessage("No letters placed on the board.");
+      showMessage(translate("no_letters_placed"));
       return;
     }
     if (!grid.isValidPlacement()) {
-      showMessage(
-        "Invalid letter placement. Please adjust the letters on the grid."
-      );
+      showMessage(translate("invalid_letter_placement"));
       return;
     }
     if (!grid.isValidWord()) {
-      showMessage(
-        `The word "${grid.getPlacedWord()}" is not valid. Please try again.`
-      );
+      showMessage(translateFormatted("non_valid_word", grid.getPlacedWord()));
       return;
     }
-    const allWordsValid = grid.validateAllWords();
-    if (!allWordsValid) {
-      showMessage(
-        "One or more formed words are not valid. Please adjust your placement."
-      );
+    if (!grid.validateAllWords()) {
+      showMessage(translate("invalid_words"));
       return;
     }
-    grid.finalizeMove();
-    // Add new letters to the letterbar to replenish it
+
+    const { score, word } = grid.finalizeMove();
+    DOM.scoreLabel.innerText = translateFormatted("score_label", score);
+    DOM.lastWordLabel.innerText = translateFormatted("last_word", word);
     const newLetters = window.letterPoolService.drawLetters(
       7 - bar.letters.length
     );
@@ -61,7 +60,7 @@ const setupActionButtons = () => {
 
   // Create a button to reset the placed live letters
   DOM.resetMoveButton = document.createElement("button");
-  DOM.resetMoveButton.innerText = "Reset Move";
+  DOM.resetMoveButton.innerText = translate("reset");
   DOM.resetMoveButton.onclick = () => {
     // Move all live letters back to the letterbar
     grid.liveLetters.forEach((letter) => {
@@ -71,6 +70,44 @@ const setupActionButtons = () => {
   };
 
   document.getElementById("actions").appendChild(DOM.resetMoveButton);
+
+  // Create a button to shuffle letters in the letterbar
+  DOM.shuffleButton = document.createElement("button");
+  DOM.shuffleButton.innerText = translate("shuffle");
+  DOM.shuffleButton.onclick = () => {
+    bar.shuffleLetters();
+  };
+
+  document.getElementById("actions").appendChild(DOM.shuffleButton);
+
+  // Create a button to switch out some letters in the letterbar
+  DOM.switchButton = document.createElement("button");
+  DOM.switchButton.innerText = translate("switch_letters");
+  DOM.switchButton.onclick = () => {
+    if (!window.gameContext.switchLetters) {
+      window.gameContext.switchLetters = true;
+    } else {
+      if (bar.hasMarkedLetters()) {
+        bar.switchMarkedLetters();
+      }
+      window.gameContext.switchLetters = false;
+    }
+  };
+
+  document.getElementById("actions").appendChild(DOM.switchButton);
+
+  // Score label
+  DOM.scoreLabel = document.createElement("span");
+  DOM.scoreLabel.id = "score-label";
+  DOM.scoreLabel.innerText = translateFormatted("score_label", 0);
+  document.getElementById("game-stats").appendChild(DOM.scoreLabel);
+
+  // Last played word label (optional)
+
+  DOM.lastWordLabel = document.createElement("span");
+  DOM.lastWordLabel.id = "last-word-label";
+  DOM.lastWordLabel.innerText = translateFormatted("last_word", "-");
+  document.getElementById("game-stats").appendChild(DOM.lastWordLabel);
 };
 
 window.setup = function () {
@@ -137,6 +174,20 @@ const handleDom = () => {
   const hasPlacedLetters = grid.hasPlacedAnyLetters();
   DOM.finishMoveButton.disabled = !hasPlacedLetters;
   DOM.resetMoveButton.disabled = !hasPlacedLetters;
+  DOM.shuffleButton.disabled = window.gameContext.switchLetters === true;
+  DOM.switchButton.disabled = hasPlacedLetters;
+
+  if (
+    window.gameContext.switchLetters &&
+    DOM.switchButton.innerText !== translate("confirm_switch")
+  ) {
+    DOM.switchButton.innerText = translate("confirm_switch");
+  } else if (
+    !window.gameContext.switchLetters &&
+    DOM.switchButton.innerText !== translate("switch_letters")
+  ) {
+    DOM.switchButton.innerText = translate("switch_letters");
+  }
 };
 
 window.mousePressed = function () {
@@ -151,6 +202,17 @@ window.mousePressed = function () {
       );
       window.gameContext.wildcard = null;
     }
+  }
+
+  if (window.gameContext.switchLetters) {
+    const letterToToggle = bar.getLetterAtPosition(mouseX, mouseY);
+    if (letterToToggle) {
+      const index = bar.letters.indexOf(letterToToggle);
+      if (index >= 0) {
+        bar.toggleMarkLetterAtIndex(index);
+      }
+    }
+    return; // Skip dragging logic while switching letters
   }
 
   // Check if dragging from letterbar - use direct position detection for better touch support

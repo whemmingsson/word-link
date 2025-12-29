@@ -32,6 +32,17 @@ export class LetterPoolService {
     const letterTile = this.letterPool.find((lt) => lt.letter === letter);
     return letterTile ? letterTile.value : 0;
   }
+
+  switchLetters(lettersToSwitch: LetterTile[]): LetterTile[] {
+    const newLetters: LetterTile[] = [];
+    const poolCopy = [...this.letterPool];
+    lettersToSwitch.forEach(() => {
+      if (poolCopy.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * poolCopy.length);
+      newLetters.push(poolCopy.splice(randomIndex, 1)[0]);
+    });
+    return newLetters;
+  }
 }
 
 // Singleton instance - created once on app load

@@ -150,10 +150,21 @@ export class Grid {
   }
 
   finalizeMove() {
-    if (window.boardService) {
+    let score = 0;
+    let word = "";
+    if (window.boardService && window.gameService) {
+      word = this.getPlacedWord();
+      // Scoring
+      score = Array.from(window.boardService.getAllWords())
+        .filter((word) => word.includeInScoring())
+        .map((word) => word.getScore())
+        .reduce((a, b) => a + b, 0);
+      window.gameService.updateScore(score);
       window.boardService.finalizeMove();
+      window.gameService.setLastWord(word);
     }
     this.lockLetters();
+    return { score, word };
   }
 
   resetMove() {
