@@ -36,8 +36,11 @@ const DOM = {
 };
 
 const calculateDynamicSizes = () => {
-  const containerWidth =
-    document.getElementById("canvas-wrapper").clientWidth || window.innerWidth;
+  // Use window width or body width, not canvas-wrapper which shrinks with the canvas
+  const containerWidth = Math.min(
+    window.innerWidth,
+    document.body.clientWidth || window.innerWidth
+  );
 
   // Calculate cell size based on grid (15x15) + margin
   const maxCellWidth = Math.floor((containerWidth - margin * 2) / 15);
