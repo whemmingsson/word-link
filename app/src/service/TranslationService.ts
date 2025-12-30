@@ -15,7 +15,10 @@ const createTranslationMap = (): Map<string, Translated<string>> => {
     en: "Confirm Switch",
   });
   map.set("score_label", { sv: "Poäng: {0}", en: "Score: {0}" });
-  map.set("last_word", { sv: "Senaste ord: {0}", en: "Last word: {0}" });
+  map.set("last_word", {
+    sv: "Senaste ord: {0} [{1}]",
+    en: "Last word: {0} [{1}]",
+  });
   map.set("no_letters_placed", {
     sv: "Inga bokstäver placerade på brädet",
     en: "No letters placed on the board",
@@ -76,6 +79,12 @@ export class TranslationService {
   }
 
   translateFormatted(key: string, ...args: string[]): string {
+    console.log(
+      "[TranslationService] Translating key:",
+      key,
+      "with args:",
+      args
+    );
     if (!this._hasEntry(key) || !this._getEntry(key)[this.language]) {
       return `Missing translation for key ${key} for language ${this.language}`;
     }

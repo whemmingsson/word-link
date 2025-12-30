@@ -1,3 +1,5 @@
+import { tileConfigService } from "./TileConfigService";
+
 interface PlacedLetter {
   id: number;
   letter: string;
@@ -8,6 +10,12 @@ interface PlacedLetter {
   wildCard?: boolean;
 }
 
+const getLetterValueMultiplier = (letter: PlacedLetter): number => {
+  if (letter.wildCard) return 1;
+  if (!letter.isLive) return 1;
+  return tileConfigService.getLetterMultiplierAt(letter.col, letter.row);
+};
+
 export class Word {
   letters: PlacedLetter[];
 
@@ -15,12 +23,29 @@ export class Word {
     this.letters = letters;
   }
 
+  _getTotalWordMultiplier(): number {
+    return this.letters
+      .filter((l) => l.isLive)
+      .reduce((acc, letter) => {
+        const wordMultiplier = tileConfigService.getWordMultiplierAt(
+          letter.col,
+          letter.row
+        );
+        return acc * wordMultiplier;
+      }, 1);
+  }
+
   getWord(): string {
     return this.letters.map((l) => l.letter).join("");
   }
 
   getScore(): number {
-    return this.letters.reduce((acc, letter) => acc + letter.value, 0);
+    return (
+      this.letters.reduce(
+        (acc, letter) => acc + letter.value * getLetterValueMultiplier(letter),
+        0
+      ) * this._getTotalWordMultiplier()
+    );
   }
 
   includeInScoring() {

@@ -79,8 +79,15 @@ const setupActionButtons = () => {
     }
 
     const { score, word } = grid.finalizeMove();
-    DOM.scoreLabel.innerText = translateFormatted("score_label", score);
-    DOM.lastWordLabel.innerText = translateFormatted("last_word", word);
+    DOM.scoreLabel.innerText = translateFormatted(
+      "score_label",
+      window.gameService.getScore()
+    );
+    DOM.lastWordLabel.innerText = translateFormatted(
+      "last_word",
+      word,
+      String(score)
+    );
     const newLetters = window.letterPoolService.drawLetters(
       7 - bar.letters.length
     );
@@ -164,7 +171,7 @@ const setupActionButtons = () => {
 
   DOM.lastWordLabel = document.createElement("span");
   DOM.lastWordLabel.id = "last-word-label";
-  DOM.lastWordLabel.innerText = translateFormatted("last_word", "-");
+  DOM.lastWordLabel.innerText = "";
   document.getElementById("game-stats").appendChild(DOM.lastWordLabel);
 };
 
