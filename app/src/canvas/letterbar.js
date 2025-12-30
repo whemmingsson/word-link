@@ -90,6 +90,7 @@ export class Letterbar {
 
   init() {
     if (window.letterPoolService) {
+      window.letterPoolService.init();
       this.letters = window.letterPoolService.drawLetters(7);
     }
   }

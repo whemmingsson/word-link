@@ -11,6 +11,10 @@ export class LetterPoolService {
     );
   }
 
+  init() {
+    this.letterPool = getLetterPool();
+  }
+
   drawLetters(count: number): LetterTile[] {
     const drawnLetters: LetterTile[] = [];
     const poolCopy = [...this.letterPool];

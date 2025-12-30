@@ -6,6 +6,8 @@ interface Translated<T> {
 const createTranslationMap = (): Map<string, Translated<string>> => {
   const map = new Map<string, Translated<string>>();
 
+  map.set("start_game", { sv: "Starta spel", en: "Start Game" });
+  map.set("abort_game", { sv: "Avbryt spel", en: "Abort Game" });
   map.set("play", { sv: "Spela", en: "Play" });
   map.set("reset", { sv: "Återställ", en: "Reset" });
   map.set("shuffle", { sv: "Blanda", en: "Shuffle" });
@@ -50,6 +52,10 @@ const createTranslationMap = (): Map<string, Translated<string>> => {
   map.set("reset_zoom", {
     sv: "Återställ zoom",
     en: "Reset zoom",
+  });
+  map.set("game_started", {
+    sv: "Spelet har startat. Brädet sparas efter varje drag.",
+    en: "The game has started. The board is saved after each move.",
   });
   map.set("dl", { sv: "DB", en: "DL" });
   map.set("tl", { sv: "TB", en: "TL" });

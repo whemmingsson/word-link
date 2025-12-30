@@ -1,4 +1,4 @@
-export const showMessage = (text, type = "error") => {
+export const showMessage = (text, type = "error", duration = 2000) => {
   const messageDiv = document.createElement("div");
   messageDiv.textContent = text;
   messageDiv.style.cssText = `
@@ -22,5 +22,5 @@ export const showMessage = (text, type = "error") => {
     messageDiv.style.transition = "opacity 0.5s";
     messageDiv.style.opacity = "0";
     setTimeout(() => messageDiv.remove(), 500);
-  }, 2000);
+  }, duration);
 };

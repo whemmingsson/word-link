@@ -17,7 +17,8 @@ let cellSize = 50;
 let gridTextSize = 16;
 let letterTileTextSize = 16;
 let letterTileScoreTextSize = 10;
-let initialized = false;
+let coreServicesInitialized = false;
+let gameStarted = false;
 
 window.gameContext = {};
 window.gameContext.draggedLetter = false;
@@ -66,9 +67,32 @@ const calculateDynamicSizes = () => {
 };
 
 const setupActionButtons = () => {
+  // Create a start button to initiate the game
+  DOM.startButton = document.createElement("button");
+  DOM.startButton.innerText = translate("start_game");
+
+  const startGameHandler = () => {
+    if (!gameStarted) {
+      startNewGame();
+      DOM.startButton.innerText = translate("abort_game");
+      showMessage(translate("game_started"), "info", 1500);
+    } else {
+      window.location.reload();
+    }
+  };
+
+  DOM.startButton.onclick = startGameHandler;
+  DOM.startButton.ontouchend = (e) => {
+    e.preventDefault();
+    startGameHandler();
+  };
+
+  document.getElementById("actions").appendChild(DOM.startButton);
+
   // Create a button to finish the move
   DOM.finishMoveButton = document.createElement("button");
   DOM.finishMoveButton.innerText = translate("play");
+  DOM.finishMoveButton.disabled = true;
 
   const finishMoveHandler = () => {
     if (!grid.hasPlacedAnyLetters()) {
@@ -119,6 +143,7 @@ const setupActionButtons = () => {
   // Create a button to reset the placed live letters
   DOM.resetMoveButton = document.createElement("button");
   DOM.resetMoveButton.innerText = translate("reset");
+  DOM.resetMoveButton.disabled = true;
 
   const resetHandler = () => {
     // Move all live letters back to the letterbar
@@ -139,6 +164,7 @@ const setupActionButtons = () => {
   // Create a button to shuffle letters in the letterbar
   DOM.shuffleButton = document.createElement("button");
   DOM.shuffleButton.innerText = translate("shuffle");
+  DOM.shuffleButton.disabled = true;
 
   const shuffleHandler = () => {
     bar.shuffleLetters();
@@ -155,6 +181,7 @@ const setupActionButtons = () => {
   // Create a button to switch out some letters in the letterbar
   DOM.switchButton = document.createElement("button");
   DOM.switchButton.innerText = translate("switch_letters");
+  DOM.switchButton.disabled = true;
 
   const switchHandler = () => {
     if (!window.gameContext.switchLetters) {
@@ -255,16 +282,20 @@ window.setup = function () {
 
   zoomController = new ZoomController();
 
-  bar.init();
   setupActionButtons();
 
   textAlign(CENTER, CENTER);
 };
 
+const startNewGame = () => {
+  bar.init();
+  gameStarted = true;
+};
+
 window.draw = function () {
-  if (!initialized) {
+  if (!coreServicesInitialized) {
     if (window.servicesReady) {
-      initialized = true;
+      coreServicesInitialized = true;
       console.log(
         "[main] Core Services are ready. Starting draw loop. Game on =)"
       );
@@ -280,7 +311,8 @@ window.draw = function () {
     zoomController.applyTransform();
   }
   grid.render();
-  pop(); // Restore transform state
+  pop(); // Restore transform
+
   bar.render();
 
   if (window.gameContext.draggedLetter) {
@@ -289,6 +321,10 @@ window.draw = function () {
 
   if (window.gameContext.switchLetters) {
     grid.renderOverlay();
+  }
+
+  if (!gameStarted) {
+    return;
   }
 
   handleCursorStyle();
