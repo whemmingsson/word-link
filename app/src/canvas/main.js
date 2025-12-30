@@ -195,7 +195,7 @@ const setupActionButtons = () => {
   DOM.EXPERIMENTAL.enableZoomCheckbox.id = "enable-zoom-checkbox";
   DOM.EXPERIMENTAL.enableZoomCheckbox.checked = false;
 
-  DOM.EXPERIMENTAL.enableZoomCheckbox.onchange = (e) => {
+  const handleZoomToggle = () => {
     window.gameContext.EXPERIMENTAL.zoomEnabled =
       DOM.EXPERIMENTAL.enableZoomCheckbox.checked;
     DOM.EXPERIMENTAL.resetZoomButton.style.visibility = window.gameContext
@@ -203,6 +203,9 @@ const setupActionButtons = () => {
       ? "visible"
       : "hidden";
   };
+
+  DOM.EXPERIMENTAL.enableZoomCheckbox.onchange = handleZoomToggle;
+  DOM.EXPERIMENTAL.enableZoomCheckbox.onclick = handleZoomToggle;
 
   zoomLabel.appendChild(DOM.EXPERIMENTAL.enableZoomCheckbox);
   zoomLabel.appendChild(
