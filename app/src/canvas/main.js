@@ -11,6 +11,7 @@ let grid;
 let bar;
 let wildcardSelector;
 let zoomController;
+let touches = []; // Track touch points for pinch zoom
 const margin = 20;
 let cellSize = 50;
 let gridTextSize = 16;
@@ -206,6 +207,12 @@ const setupActionButtons = () => {
 
   DOM.EXPERIMENTAL.enableZoomCheckbox.onchange = handleZoomToggle;
   DOM.EXPERIMENTAL.enableZoomCheckbox.onclick = handleZoomToggle;
+  DOM.EXPERIMENTAL.enableZoomCheckbox.ontouchend = (e) => {
+    e.preventDefault();
+    DOM.EXPERIMENTAL.enableZoomCheckbox.checked =
+      !DOM.EXPERIMENTAL.enableZoomCheckbox.checked;
+    handleZoomToggle();
+  };
 
   zoomLabel.appendChild(DOM.EXPERIMENTAL.enableZoomCheckbox);
   zoomLabel.appendChild(
@@ -453,7 +460,7 @@ window.mouseWheel = function (event) {
 window.touchStarted = function () {
   touches = [...window.touches];
   if (touches.length === 2 && window.gameContext.EXPERIMENTAL.zoomEnabled) {
-    // Start pinch zoom
+    // Start pinch zoom - prevent default to avoid Safari interference
     return false;
   }
   window.mousePressed();
@@ -461,6 +468,11 @@ window.touchStarted = function () {
 };
 
 window.touchEnded = function () {
+  if (touches.length === 2 && window.gameContext.EXPERIMENTAL.zoomEnabled) {
+    touches = [];
+    return false;
+  }
+  touches = [];
   window.mouseReleased();
   return false;
 };
@@ -468,6 +480,10 @@ window.touchEnded = function () {
 window.touchMoved = function () {
   if (touches.length === 2 && window.gameContext.EXPERIMENTAL.zoomEnabled) {
     const newTouches = [...window.touches];
+    if (newTouches.length !== 2) {
+      return false;
+    }
+
     const oldDist = dist(
       touches[0].x,
       touches[0].y,

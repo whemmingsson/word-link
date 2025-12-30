@@ -7,6 +7,17 @@ body {
       background: #000;
 }
 
+#canvas-wrapper {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#canvas-wrapper canvas {
+    touch-action: none;
+}
+
 #actions {
     margin-top: 1rem;
     display: flex;
@@ -21,6 +32,22 @@ body {
     color: white;
     font-family: Arial, sans-serif;
     font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+}
+
+#actions input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
 }
 
 #actions button {
