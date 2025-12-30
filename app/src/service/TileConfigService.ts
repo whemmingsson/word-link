@@ -4,6 +4,7 @@ export class TileConfigService {
   tileMap: Record<string, import("../types/tile").Tile>;
   constructor() {
     this.tileMap = makeTileMap();
+    console.log("[core service] TileConfigService initialized with tile map.");
   }
 
   getTileMap() {

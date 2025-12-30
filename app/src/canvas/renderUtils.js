@@ -47,18 +47,19 @@ const renderLetterTile = (
 
   // Draw letter
   const letter = letterObj.letter;
-  renderText(letter, x, y);
+  renderText(letter, x, y, window.gameContext.letterTileTextSize);
 
   // Draw value in top right corner
   if (letterObj.value) {
-    const valueX = tileX + cellSize - borderWidth - 8;
-    const valueY = tileY + borderWidth + 12;
+    const scoreTextSize = window.gameContext.letterTileScoreTextSize;
+    const valueX = tileX + cellSize - borderWidth - scoreTextSize;
+    const valueY = tileY + borderWidth + scoreTextSize;
     renderText(
       letterObj.value.toString(),
       valueX,
       valueY,
       styleUtils.tile.textColor,
-      14
+      scoreTextSize
     );
   }
 };
@@ -169,7 +170,13 @@ const renderBoardTileAtPosition = (x, y, tile, cellSize) => {
   }
 
   renderSquare(x - cellSize / 2, y - cellSize / 2, cellSize, tileConfig.color);
-  renderText(tileConfig.text, x, y, styleUtils.grid.cell.textColor, 18);
+  renderText(
+    tileConfig.text,
+    x,
+    y,
+    styleUtils.grid.cell.textColor,
+    window.gameContext.gridTextSize
+  );
 };
 
 const renderLetterHighlightAtPosition = (x, y, cellSize) => {
@@ -188,6 +195,11 @@ const renderLetterHighlightAtPosition = (x, y, cellSize) => {
   styleUtils.resetStyles();
 };
 
+const renderGridOverlay = (rows, cols, cellSize) => {
+  fill(0, 0, 0, 180);
+  rect(0, 0, cols * cellSize, rows * cellSize);
+};
+
 export const renderUtils = {
   renderGridLines,
   renderShadedCellIfTileIsDragged,
@@ -196,4 +208,5 @@ export const renderUtils = {
   renderLetterTileAtPosition,
   renderBoardTileAtPosition,
   renderLetterHighlightAtPosition,
+  renderGridOverlay,
 };

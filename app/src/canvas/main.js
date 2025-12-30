@@ -10,12 +10,22 @@ let grid;
 let bar;
 let wildcardSelector;
 const margin = 20;
-const cellSize = 50;
+let cellSize = 50;
+let gridTextSize = 16;
+let letterTileTextSize = 16;
+let letterTileScoreTextSize = 10;
 let initialized = false;
 
 window.gameContext = {};
 window.gameContext.draggedLetter = false;
+// Size of each cell in pixels
 window.gameContext.cellSize = cellSize;
+// Text size for special tiles displayed on the grid
+window.gameContext.gridTextSize = gridTextSize;
+// Text size for letters displayed on letter tiles
+window.gameContext.letterTileTextSize = letterTileTextSize;
+// Text size for score displayed on letter tiles
+window.gameContext.letterTileScoreTextSize = letterTileScoreTextSize;
 
 const DOM = {
   finishMoveButton: null,
@@ -23,6 +33,23 @@ const DOM = {
   shuffleButton: null,
   switchButton: null,
   scoreLabel: null,
+};
+
+const calculateDynamicSizes = () => {
+  const containerWidth =
+    document.getElementById("canvas-wrapper").clientWidth || window.innerWidth;
+
+  // Calculate cell size based on grid (15x15) + margin
+  const maxCellWidth = Math.floor((containerWidth - margin * 2) / 15);
+
+  cellSize = Math.max(28, Math.min(60, maxCellWidth));
+  window.gameContext.cellSize = cellSize;
+  gridTextSize = Math.floor(cellSize * 0.4);
+  window.gameContext.gridTextSize = gridTextSize;
+  letterTileTextSize = Math.floor(cellSize * 0.32);
+  window.gameContext.letterTileTextSize = letterTileTextSize;
+  letterTileScoreTextSize = Math.floor(cellSize * 0.2);
+  window.gameContext.letterTileScoreTextSize = letterTileScoreTextSize;
 };
 
 const setupActionButtons = () => {
@@ -139,6 +166,8 @@ const setupActionButtons = () => {
 };
 
 window.setup = function () {
+  calculateDynamicSizes(); // Calculate responsive cell size
+
   grid = new Grid(15, 15, cellSize);
   bar = new Letterbar(0, grid.getHeight() + margin, grid.getWidth(), cellSize);
 
@@ -160,18 +189,25 @@ window.draw = function () {
   if (!initialized) {
     if (window.servicesReady) {
       initialized = true;
-      console.log("Services are ready. Starting draw loop.");
+      console.log(
+        "[main] Core Services are ready. Starting draw loop. Game on =)"
+      );
     } else {
+      console.log("[main] Waiting for services to be ready...");
       return; // Wait until services are ready
     }
   }
 
   background(styleUtils.sketch.backgroundColor);
-  grid.drawGrid();
-  bar.drawLetterbar();
+  grid.render();
+  bar.render();
 
   if (window.gameContext.draggedLetter) {
     renderUtils.renderDraggedTile(window.gameContext.draggedLetter, cellSize);
+  }
+
+  if (window.gameContext.switchLetters) {
+    grid.renderOverlay();
   }
 
   handleCursorStyle();
@@ -198,12 +234,23 @@ const renderWildcardSelector = () => {
   wildcardSelector.render();
 };
 
+const setIfValueChanged = (obj, key, newValue) => {
+  if (obj[key] !== newValue) {
+    obj[key] = newValue;
+  }
+};
+
 const handleDom = () => {
   const hasPlacedLetters = grid.hasPlacedAnyLetters();
-  DOM.finishMoveButton.disabled = !hasPlacedLetters;
-  DOM.resetMoveButton.disabled = !hasPlacedLetters;
-  DOM.shuffleButton.disabled = window.gameContext.switchLetters === true;
-  DOM.switchButton.disabled = hasPlacedLetters;
+
+  setIfValueChanged(DOM.finishMoveButton, "disabled", !hasPlacedLetters);
+  setIfValueChanged(DOM.resetMoveButton, "disabled", !hasPlacedLetters);
+  setIfValueChanged(
+    DOM.shuffleButton,
+    "disabled",
+    window.gameContext.switchLetters
+  );
+  setIfValueChanged(DOM.switchButton, "disabled", hasPlacedLetters);
 
   if (
     window.gameContext.switchLetters &&
@@ -218,77 +265,84 @@ const handleDom = () => {
   }
 };
 
+// Handle window resize
+window.windowResized = function () {
+  calculateDynamicSizes();
+  grid.cellSize = cellSize;
+  bar.cellSize = cellSize;
+  bar.y = grid.getHeight() + margin;
+  bar.width = grid.getWidth();
+
+  resizeCanvas(grid.getWidth(), grid.getHeight() + bar.getHeight() + margin);
+};
+
 window.mousePressed = function () {
   if (window.gameContext.wildcard?.selecting) {
-    const letter = wildcardSelector.getSelectedLetter();
-    if (letter) {
-      window.gameContext.wildcard.letter.letter = letter;
-      window.boardService.updateLetterAt(
-        window.gameContext.wildcard.letter.row,
-        window.gameContext.wildcard.letter.col,
-        window.gameContext.wildcard.letter
-      );
-      window.gameContext.wildcard = null;
-    }
+    handleSelectedWildcardLetter();
+    return;
   }
 
   if (window.gameContext.switchLetters) {
-    const letterToToggle = bar.getLetterAtPosition(mouseX, mouseY);
-    if (letterToToggle) {
-      const index = bar.letters.indexOf(letterToToggle);
-      if (index >= 0) {
-        bar.toggleMarkLetterAtIndex(index);
-      }
-    }
-    return; // Skip dragging logic while switching letters
+    handleSwitchLetters();
+    return;
   }
 
-  // Check if dragging from letterbar - use direct position detection for better touch support
-  if (!window.gameContext.draggedLetter) {
-    const barLetter = bar.getLetterAtPosition(mouseX, mouseY);
-    if (barLetter) {
-      window.gameContext.draggedLetter = barLetter;
-      window.gameContext.dragSource = "bar";
-      return;
-    }
+  if (bar.mouseIsOver() && !window.gameContext.draggedLetter) {
+    handleBeginDragFromBar();
+    return;
   }
 
-  // Check if dragging from grid (only liveLetters)
   if (grid.mouseIsOver() && !window.gameContext.draggedLetter) {
-    const gridLetter = grid.getMouseOverLetter();
-    if (gridLetter) {
-      window.gameContext.draggedLetter = gridLetter;
-      window.gameContext.dragSource = "grid";
+    handleBeginDragFromGrid();
+    return;
+  }
+};
+
+const handleSelectedWildcardLetter = () => {
+  const letter = wildcardSelector.getSelectedLetter();
+  if (letter) {
+    window.gameContext.wildcard.letter.letter = letter;
+    window.boardService.updateLetterAt(
+      window.gameContext.wildcard.letter.row,
+      window.gameContext.wildcard.letter.col,
+      window.gameContext.wildcard.letter
+    );
+    window.gameContext.wildcard = null;
+  }
+};
+
+const handleSwitchLetters = () => {
+  const letterToToggle = bar.getLetterAtPosition(mouseX, mouseY);
+  if (letterToToggle) {
+    const index = bar.letters.indexOf(letterToToggle);
+    if (index >= 0) {
+      bar.toggleMarkLetterAtIndex(index);
     }
+  }
+};
+
+const handleBeginDragFromBar = () => {
+  const barLetter = bar.getLetterAtPosition(mouseX, mouseY);
+  if (barLetter) {
+    window.gameContext.draggedLetter = barLetter;
+    window.gameContext.dragSource = "bar";
+  }
+};
+
+const handleBeginDragFromGrid = () => {
+  const gridLetter = grid.getMouseOverLetter();
+  if (gridLetter) {
+    window.gameContext.draggedLetter = gridLetter;
+    window.gameContext.dragSource = "grid";
   }
 };
 
 window.mouseReleased = function () {
   if (window.gameContext.draggedLetter) {
-    // Dragging from bar to grid
     if (window.gameContext.dragSource === "bar") {
-      if (
-        grid.canDropLetter() &&
-        grid.dropLetter(window.gameContext.draggedLetter)
-      ) {
-        bar.removeLetter(window.gameContext.draggedLetter);
-      }
-      // If letter wasn't successfully dropped, it stays in the bar (no action needed)
-    }
-
-    // Dragging from grid to bar
-    else if (window.gameContext.dragSource === "grid") {
-      if (bar.mouseIsOver()) {
-        // Drop letter back to bar
-        bar.addLetter(window.gameContext.draggedLetter);
-        grid.removeLetter(window.gameContext.draggedLetter);
-      }
-      // Drop back to grid (same or different cell)
-      else if (grid.canDropLetter()) {
-        grid.removeLetter(window.gameContext.draggedLetter);
-        grid.dropLetter(window.gameContext.draggedLetter);
-      }
-      // If not dropped anywhere valid, letter stays in original grid position
+      handleEndDragFromBar();
+    } else if (window.gameContext.dragSource === "grid") {
+      handleEndDragFromGrid();
     }
 
     window.gameContext.draggedLetter = null;
@@ -296,23 +350,35 @@ window.mouseReleased = function () {
   }
 };
 
-// Touch event handlers for mobile/tablet support
+const handleEndDragFromBar = () => {
+  const letter = window.gameContext.draggedLetter;
+  if (grid.canDropLetter() && grid.dropLetter(letter)) {
+    bar.removeLetter(letter);
+  }
+};
+
+const handleEndDragFromGrid = () => {
+  const letter = window.gameContext.draggedLetter;
+  if (bar.mouseIsOver()) {
+    bar.addLetter(letter);
+    grid.removeLetter(letter);
+  } else if (grid.canDropLetter()) {
+    grid.removeLetter(letter);
+    grid.dropLetter(letter);
+  }
+};
+
 window.touchStarted = function () {
-  // Call the same logic as mousePressed
   window.mousePressed();
-  // Prevent default touch behavior (scrolling)
   return false;
 };
 
 window.touchEnded = function () {
-  // Call the same logic as mouseReleased
   window.mouseReleased();
-  // Prevent default touch behavior
   return false;
 };
 
 window.touchMoved = function () {
-  // Prevent scrolling while dragging
   if (window.gameContext.draggedLetter) {
     return false;
   }

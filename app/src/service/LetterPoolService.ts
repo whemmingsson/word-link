@@ -6,7 +6,9 @@ export class LetterPoolService {
 
   constructor() {
     this.letterPool = getLetterPool();
-    console.log("LetterPoolService initialized with letter pool.");
+    console.log(
+      "[core service] LetterPoolService initialized with letter pool."
+    );
   }
 
   drawLetters(count: number): LetterTile[] {
@@ -17,14 +19,6 @@ export class LetterPoolService {
       const randomIndex = Math.floor(Math.random() * poolCopy.length);
       drawnLetters.push(poolCopy.splice(randomIndex, 1)[0]);
     }
-
-    // ONLY FOR DEBUG - ADD THE WILDCARD
-    drawnLetters.push({
-      letter: "*",
-      value: 0,
-      id: Math.random() * 100000 + 99999,
-      wildCard: true,
-    });
     return drawnLetters;
   }
 

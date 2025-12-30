@@ -50,6 +50,10 @@ export class TranslationService {
   constructor() {
     this.language = "sv"; // default language
     this.map = createTranslationMap();
+    console.log(
+      "[core service] TranslationService initialized with language:",
+      this.language
+    );
   }
 
   _hasEntry(key: string): boolean {

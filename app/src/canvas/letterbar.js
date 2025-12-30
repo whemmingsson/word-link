@@ -26,7 +26,7 @@ export class Letterbar {
     return this.y + this.height / 2;
   }
 
-  drawLetterbar() {
+  render() {
     fill(styleUtils.letterBar.backgroundColor);
     stroke(styleUtils.letterBar.borderColor);
     strokeWeight(1);

@@ -9,7 +9,9 @@ export class DictionaryService {
   constructor() {
     this.dictionary = buildTree(words);
     this.cache = new Map<string, boolean>();
-    console.log("DictionaryService initialized with dictionary tree.");
+    console.log(
+      "[core service] DictionaryService initialized with dictionary tree."
+    );
   }
 
   hasWord(word: string): boolean {

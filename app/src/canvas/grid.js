@@ -35,7 +35,7 @@ export class Grid {
     return Math.floor(mY / this.cellSize);
   }
 
-  drawGrid() {
+  render() {
     // Render special tiles from tileConfigService
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
@@ -69,6 +69,10 @@ export class Grid {
 
       renderUtils.renderTileWithLetter(letter, this.cellSize);
     }
+  }
+
+  renderOverlay() {
+    renderUtils.renderGridOverlay(this.rows, this.cols, this.cellSize);
   }
 
   getWidth() {

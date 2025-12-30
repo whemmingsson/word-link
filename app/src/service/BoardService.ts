@@ -36,7 +36,7 @@ export class BoardService {
     this.board = [];
     this.letters = [];
     this.liveLetters = [];
-    console.log("BoardService initialized.");
+    console.log("[core service] BoardService initialized.");
     this.initializeBoard();
   }
 
