@@ -65,6 +65,10 @@ const setupActionButtons = () => {
       showMessage(translate("no_letters_placed"));
       return;
     }
+    if (grid.isFirstMove() && !grid.isCenterCellOccupied()) {
+      showMessage(translate("invalid_first_move"));
+      return;
+    }
     if (!grid.isValidPlacement()) {
       showMessage(translate("invalid_letter_placement"));
       return;

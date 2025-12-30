@@ -392,15 +392,11 @@ export class BoardService {
       }
     }
 
-    // Debug logging
-    console.log("All words found on board:");
-    words.forEach((word) => {
-      console.log(
-        `  Word: "${word.getWord()}", Score: ${word.getScore()}, Include in scoring: ${word.includeInScoring()}`
-      );
-    });
-
     return words;
+  }
+
+  isFirstMove(): boolean {
+    return this.letters.filter((l) => !l.isLive).length === 0;
   }
 }
 

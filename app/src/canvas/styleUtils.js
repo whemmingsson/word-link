@@ -17,6 +17,7 @@ export const styleUtils = {
     markedLetterBorderColor: "#ffcc00ff",
   },
   grid: {
+    centerShapeFillColor: "#b0b0b0ff",
     fillColor: "#1b1b1bf0",
     lineColor: "#ccc",
     cell: {

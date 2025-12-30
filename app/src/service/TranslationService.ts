@@ -27,6 +27,10 @@ const createTranslationMap = (): Map<string, Translated<string>> => {
     sv: "Ogiltig bokstavsplacering",
     en: "Invalid letter placement",
   });
+  map.set("invalid_first_move", {
+    sv: "Det första ordet måste placeras över mittenrutan",
+    en: "The first word must cover the center square",
+  });
   map.set("non_valid_word", {
     sv: 'Ordet "{0}" finns inte i ordlistan.',
     en: 'The word "{0}" is not valid.',

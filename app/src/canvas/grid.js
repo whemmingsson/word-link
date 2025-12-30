@@ -47,6 +47,14 @@ export class Grid {
           tileType,
           this.cellSize
         );
+
+        if (col == 7 && row == 7) {
+          renderUtils.renderCenterStar(
+            col * this.cellSize + this.cellSize / 2,
+            row * this.cellSize + this.cellSize / 2,
+            this.cellSize
+          );
+        }
       }
     }
 
@@ -202,7 +210,6 @@ export class Grid {
   isValidWord() {
     if (window.boardService) {
       const word = this.getPlacedWord();
-      console.log(`Validating placed word: "${word}"`);
       return window.dictionaryService.hasWord(word);
     }
     return false;
@@ -216,6 +223,20 @@ export class Grid {
         const validationResult = window.dictionaryService.validateWords(words);
         return validationResult.allValid;
       }
+    }
+    return false;
+  }
+
+  isCenterCellOccupied() {
+    if (window.boardService) {
+      return window.boardService.cellIsOccupied(7, 7);
+    }
+    return false;
+  }
+
+  isFirstMove() {
+    if (window.boardService) {
+      return window.boardService.isFirstMove();
     }
     return false;
   }

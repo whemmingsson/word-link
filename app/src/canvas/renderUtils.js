@@ -200,6 +200,24 @@ const renderGridOverlay = (rows, cols, cellSize) => {
   rect(0, 0, cols * cellSize, rows * cellSize);
 };
 
+const renderCenterStar = (x, y, cellSize) => {
+  const starSize = cellSize / 3;
+  fill(styleUtils.grid.centerShapeFillColor);
+  noStroke();
+  beginShape();
+  for (let i = 0; i < 5; i++) {
+    const angle = i * (TWO_PI / 5) - HALF_PI;
+    const sx = x + cos(angle) * starSize;
+    const sy = y + sin(angle) * starSize;
+    vertex(sx, sy);
+    const innerAngle = angle + PI / 5;
+    const innerX = x + cos(innerAngle) * (starSize / 2);
+    const innerY = y + sin(innerAngle) * (starSize / 2);
+    vertex(innerX, innerY);
+  }
+  endShape(CLOSE);
+};
+
 export const renderUtils = {
   renderGridLines,
   renderShadedCellIfTileIsDragged,
@@ -209,4 +227,5 @@ export const renderUtils = {
   renderBoardTileAtPosition,
   renderLetterHighlightAtPosition,
   renderGridOverlay,
+  renderCenterStar,
 };
