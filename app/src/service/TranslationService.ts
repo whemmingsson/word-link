@@ -6,13 +6,13 @@ interface Translated<T> {
 const createTranslationMap = (): Map<string, Translated<string>> => {
   const map = new Map<string, Translated<string>>();
 
-  map.set("play", { sv: "Spela", en: "Finish Move" });
-  map.set("reset", { sv: "Återställ drag", en: "Reset Move" });
-  map.set("shuffle", { sv: "Blanda bokstäver", en: "Shuffle Letters" });
-  map.set("switch_letters", { sv: "Byt bokstäver", en: "Switch Letters" });
+  map.set("play", { sv: "Spela", en: "Play" });
+  map.set("reset", { sv: "Återställ", en: "Reset" });
+  map.set("shuffle", { sv: "Blanda", en: "Shuffle" });
+  map.set("switch_letters", { sv: "Byt", en: "Switch" });
   map.set("confirm_switch", {
-    sv: "Bekräfta byte",
-    en: "Confirm Switch",
+    sv: "Bekräfta",
+    en: "Confirm",
   });
   map.set("score_label", { sv: "Poäng: {0}", en: "Score: {0}" });
   map.set("last_word", {
@@ -42,6 +42,14 @@ const createTranslationMap = (): Map<string, Translated<string>> => {
   map.set("select_letter", {
     sv: "Välj en bokstav för jokertecken",
     en: "Select a letter for wildcard",
+  });
+  map.set("enable_zoom", {
+    sv: "Zoom?",
+    en: "Enable zoom",
+  });
+  map.set("reset_zoom", {
+    sv: "Återställ zoom",
+    en: "Reset zoom",
   });
   map.set("dl", { sv: "DB", en: "DL" });
   map.set("tl", { sv: "TB", en: "TL" });

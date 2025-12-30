@@ -12,8 +12,15 @@ body {
     display: flex;
     gap: 1rem;
     justify-content: center;
+    align-items: center;
     position: relative;
     z-index: 1000;
+}
+
+#actions label {
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
 }
 
 #actions button {

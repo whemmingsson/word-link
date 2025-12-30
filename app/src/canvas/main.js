@@ -5,10 +5,12 @@ import { styleUtils } from "./styleUtils.js";
 import { WildcardSelector } from "./wildcardSelector.js";
 import { showMessage } from "./messageBox.js";
 import { translate, translateFormatted } from "./translationUtils.js";
+import { ZoomController } from "./zoomController.js";
 
 let grid;
 let bar;
 let wildcardSelector;
+let zoomController;
 const margin = 20;
 let cellSize = 50;
 let gridTextSize = 16;
@@ -27,12 +29,19 @@ window.gameContext.letterTileTextSize = letterTileTextSize;
 // Text size for score displayed on letter tiles
 window.gameContext.letterTileScoreTextSize = letterTileScoreTextSize;
 
+window.gameContext.EXPERIMENTAL = {};
+window.gameContext.EXPERIMENTAL.zoomEnabled = false;
+
 const DOM = {
   finishMoveButton: null,
   resetMoveButton: null,
   shuffleButton: null,
   switchButton: null,
   scoreLabel: null,
+  EXPERIMENTAL: {
+    enableZoomCheckbox: null,
+    resetZoomButton: null,
+  },
 };
 
 const calculateDynamicSizes = () => {
@@ -172,11 +181,52 @@ const setupActionButtons = () => {
   document.getElementById("game-stats").appendChild(DOM.scoreLabel);
 
   // Last played word label (optional)
-
   DOM.lastWordLabel = document.createElement("span");
   DOM.lastWordLabel.id = "last-word-label";
   DOM.lastWordLabel.innerText = "";
   document.getElementById("game-stats").appendChild(DOM.lastWordLabel);
+
+  // EXPERIMENTAL FEATURES
+  const zoomLabel = document.createElement("label");
+  zoomLabel.htmlFor = "enable-zoom-checkbox";
+
+  DOM.EXPERIMENTAL.enableZoomCheckbox = document.createElement("input");
+  DOM.EXPERIMENTAL.enableZoomCheckbox.type = "checkbox";
+  DOM.EXPERIMENTAL.enableZoomCheckbox.id = "enable-zoom-checkbox";
+  DOM.EXPERIMENTAL.enableZoomCheckbox.checked = false;
+
+  DOM.EXPERIMENTAL.enableZoomCheckbox.onchange = (e) => {
+    window.gameContext.EXPERIMENTAL.zoomEnabled =
+      DOM.EXPERIMENTAL.enableZoomCheckbox.checked;
+    DOM.EXPERIMENTAL.resetZoomButton.style.visibility = window.gameContext
+      .EXPERIMENTAL.zoomEnabled
+      ? "visible"
+      : "hidden";
+  };
+
+  zoomLabel.appendChild(DOM.EXPERIMENTAL.enableZoomCheckbox);
+  zoomLabel.appendChild(
+    document.createTextNode(" " + translate("enable_zoom"))
+  );
+
+  document.getElementById("actions").appendChild(zoomLabel);
+
+  DOM.EXPERIMENTAL.resetZoomButton = document.createElement("button");
+  DOM.EXPERIMENTAL.resetZoomButton.innerText = translate("reset_zoom");
+  DOM.EXPERIMENTAL.resetZoomButton.style.visibility = "hidden";
+  const resetZoomHandler = () => {
+    zoomController.reset();
+  };
+
+  DOM.EXPERIMENTAL.resetZoomButton.onclick = resetZoomHandler;
+  DOM.EXPERIMENTAL.resetZoomButton.ontouchend = (e) => {
+    e.preventDefault();
+    resetZoomHandler();
+  };
+
+  document
+    .getElementById("actions")
+    .appendChild(DOM.EXPERIMENTAL.resetZoomButton);
 };
 
 window.setup = function () {
@@ -192,6 +242,8 @@ window.setup = function () {
 
   // Must be after createCanvas to ensure width/height are defined
   wildcardSelector = new WildcardSelector();
+
+  zoomController = new ZoomController();
 
   bar.init();
   setupActionButtons();
@@ -213,7 +265,12 @@ window.draw = function () {
   }
 
   background(styleUtils.sketch.backgroundColor);
+  push(); // Save transform state
+  if (window.gameContext.EXPERIMENTAL.zoomEnabled) {
+    zoomController.applyTransform();
+  }
   grid.render();
+  pop(); // Restore transform state
   bar.render();
 
   if (window.gameContext.draggedLetter) {
@@ -382,7 +439,20 @@ const handleEndDragFromGrid = () => {
   }
 };
 
+// Mouse wheel zoom
+window.mouseWheel = function (event) {
+  if (grid.mouseIsOver() && window.gameContext.EXPERIMENTAL.zoomEnabled) {
+    zoomController.handleZoom(event.delta, mouseX, mouseY);
+    return false;
+  }
+};
+
 window.touchStarted = function () {
+  touches = [...window.touches];
+  if (touches.length === 2 && window.gameContext.EXPERIMENTAL.zoomEnabled) {
+    // Start pinch zoom
+    return false;
+  }
   window.mousePressed();
   return false;
 };
@@ -393,6 +463,29 @@ window.touchEnded = function () {
 };
 
 window.touchMoved = function () {
+  if (touches.length === 2 && window.gameContext.EXPERIMENTAL.zoomEnabled) {
+    const newTouches = [...window.touches];
+    const oldDist = dist(
+      touches[0].x,
+      touches[0].y,
+      touches[1].x,
+      touches[1].y
+    );
+    const newDist = dist(
+      newTouches[0].x,
+      newTouches[0].y,
+      newTouches[1].x,
+      newTouches[1].y
+    );
+
+    const zoomDelta = (newDist - oldDist) * 2;
+    const centerX = (newTouches[0].x + newTouches[1].x) / 2;
+    const centerY = (newTouches[0].y + newTouches[1].y) / 2;
+
+    zoomController.handleZoom(-zoomDelta, centerX, centerY);
+    touches = newTouches;
+    return false;
+  }
   if (window.gameContext.draggedLetter) {
     return false;
   }
