@@ -32,7 +32,8 @@ window.gameContext.letterTileTextSize = letterTileTextSize;
 window.gameContext.letterTileScoreTextSize = letterTileScoreTextSize;
 
 window.gameContext.EXPERIMENTAL = {};
-window.gameContext.EXPERIMENTAL.zoomEnabled = false;
+// Zoom is now always enabled
+window.gameContext.EXPERIMENTAL.zoomEnabled = true;
 
 const DOM = {
   finishMoveButton: null,
@@ -41,7 +42,6 @@ const DOM = {
   switchButton: null,
   scoreLabel: null,
   EXPERIMENTAL: {
-    enableZoomCheckbox: null,
     resetZoomButton: null,
   },
 };
@@ -147,43 +147,11 @@ const setupActionButtons = () => {
   DOM.lastWordLabel.innerText = "";
   document.getElementById("game-stats").appendChild(DOM.lastWordLabel);
 
-  // EXPERIMENTAL FEATURES
-  const zoomLabel = document.createElement("label");
-  zoomLabel.htmlFor = "enable-zoom-checkbox";
-
-  DOM.EXPERIMENTAL.enableZoomCheckbox = document.createElement("input");
-  DOM.EXPERIMENTAL.enableZoomCheckbox.type = "checkbox";
-  DOM.EXPERIMENTAL.enableZoomCheckbox.id = "enable-zoom-checkbox";
-  DOM.EXPERIMENTAL.enableZoomCheckbox.checked = false;
-
-  const handleZoomToggle = () => {
-    window.gameContext.EXPERIMENTAL.zoomEnabled =
-      DOM.EXPERIMENTAL.enableZoomCheckbox.checked;
-    DOM.EXPERIMENTAL.resetZoomButton.style.visibility = window.gameContext
-      .EXPERIMENTAL.zoomEnabled
-      ? "visible"
-      : "hidden";
-  };
-
-  DOM.EXPERIMENTAL.enableZoomCheckbox.onchange = handleZoomToggle;
-  DOM.EXPERIMENTAL.enableZoomCheckbox.onclick = handleZoomToggle;
-  DOM.EXPERIMENTAL.enableZoomCheckbox.ontouchend = (e) => {
-    e.preventDefault();
-    DOM.EXPERIMENTAL.enableZoomCheckbox.checked =
-      !DOM.EXPERIMENTAL.enableZoomCheckbox.checked;
-    handleZoomToggle();
-  };
-
-  zoomLabel.appendChild(DOM.EXPERIMENTAL.enableZoomCheckbox);
-  zoomLabel.appendChild(
-    document.createTextNode(" " + translate("enable_zoom"))
-  );
-
-  document.getElementById("actions").appendChild(zoomLabel);
-
+  // ZOOM CONTROLS - Zoom is now always enabled
+  // Reset zoom button to return to default view
   DOM.EXPERIMENTAL.resetZoomButton = document.createElement("button");
   DOM.EXPERIMENTAL.resetZoomButton.innerText = translate("reset_zoom");
-  DOM.EXPERIMENTAL.resetZoomButton.style.visibility = "hidden";
+  DOM.EXPERIMENTAL.resetZoomButton.id = "reset-zoom-button";
   const resetZoomHandler = () => {
     zoomController.reset();
   };
@@ -265,6 +233,8 @@ window.setup = function () {
   wildcardSelector = new WildcardSelector();
 
   zoomController = new ZoomController();
+  // Store zoom controller in gameContext so Grid can access it for coordinate transformations
+  window.gameContext.zoomController = zoomController;
 
   setupActionButtons();
 

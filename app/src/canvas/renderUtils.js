@@ -103,10 +103,13 @@ const renderShadedCellIfTileIsDragged = (
   rows,
   cols,
   cellSize,
-  cellIsOccupiedFunc
+  cellIsOccupiedFunc,
+  transformedMouseX = null,
+  transformedMouseY = null
 ) => {
-  const mX = mouseX;
-  const mY = mouseY;
+  // Use transformed coordinates if provided (for zoom support), otherwise use raw mouseX/mouseY
+  const mX = transformedMouseX !== null ? transformedMouseX : mouseX;
+  const mY = transformedMouseY !== null ? transformedMouseY : mouseY;
   const col = Math.floor(mX / cellSize);
   const row = Math.floor(mY / cellSize);
   if (shouldRenderShadedCell(row, col, rows, cols, cellIsOccupiedFunc)) {

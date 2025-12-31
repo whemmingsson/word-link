@@ -20,6 +20,18 @@ export class Grid {
     };
   }
 
+  // Get mouse coordinates, applying zoom transformation if zoom is enabled
+  // This ensures that when the grid is zoomed, we get the correct grid cell under the mouse cursor
+  _getTransformedMouseCoords() {
+    // Check if zoom is enabled and zoom controller is available
+    if (window.gameContext?.EXPERIMENTAL?.zoomEnabled && window.gameContext?.zoomController) {
+      // Transform screen coordinates to canvas coordinates
+      return window.gameContext.zoomController.screenToCanvas(mouseX, mouseY);
+    }
+    // No zoom - use raw mouse coordinates
+    return { x: mouseX, y: mouseY };
+  }
+
   _cellIsOccupied(row, col) {
     if (window.boardService) {
       return window.boardService.cellIsOccupied(row, col);
@@ -27,10 +39,12 @@ export class Grid {
     return false;
   }
 
+  // Convert x coordinate to grid column, using transformed mouse position when zoom is active
   _getCol(mX) {
     return Math.floor(mX / this.cellSize);
   }
 
+  // Convert y coordinate to grid row, using transformed mouse position when zoom is active
   _getRow(mY) {
     return Math.floor(mY / this.cellSize);
   }
@@ -59,11 +73,15 @@ export class Grid {
     }
 
     // Highlight cell under mouse if a letter is being dragged
+    // Pass transformed coordinates so highlighting works correctly when zoomed
+    const coords = this._getTransformedMouseCoords();
     renderUtils.renderShadedCellIfTileIsDragged(
       this.rows,
       this.cols,
       this.cellSize,
-      this._cellIsOccupied.bind(this)
+      this._cellIsOccupied.bind(this),
+      coords.x,
+      coords.y
     );
 
     for (const letter of window.boardService.getPlacedLetters()) {
@@ -92,17 +110,21 @@ export class Grid {
   }
 
   mouseIsOver() {
+    // Use transformed coordinates to check if mouse is over grid (accounts for zoom/pan)
+    const coords = this._getTransformedMouseCoords();
     return (
-      mouseX >= 0 &&
-      mouseX < this.getWidth() &&
-      mouseY >= 0 &&
-      mouseY < this.getHeight()
+      coords.x >= 0 &&
+      coords.x < this.getWidth() &&
+      coords.y >= 0 &&
+      coords.y < this.getHeight()
     );
   }
 
   canDropLetter() {
-    const col = this._getCol(mouseX);
-    const row = this._getRow(mouseY);
+    // Use transformed coordinates to find the correct cell under cursor (accounts for zoom/pan)
+    const coords = this._getTransformedMouseCoords();
+    const col = this._getCol(coords.x);
+    const row = this._getRow(coords.y);
     return (
       col >= 0 &&
       col < this.cols &&
@@ -120,8 +142,10 @@ export class Grid {
   }
 
   dropLetter(letter) {
-    const col = this._getCol(mouseX);
-    const row = this._getRow(mouseY);
+    // Use transformed coordinates to place letter at correct grid position (accounts for zoom/pan)
+    const coords = this._getTransformedMouseCoords();
+    const col = this._getCol(coords.x);
+    const row = this._getRow(coords.y);
     if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
       if (window.boardService) {
         const normalizedLetter = this._normalizeLetter(letter, row, col);
@@ -139,8 +163,10 @@ export class Grid {
   }
 
   getMouseOverLetter() {
-    const col = this._getCol(mouseX);
-    const row = this._getRow(mouseY);
+    // Use transformed coordinates to find letter under cursor (accounts for zoom/pan)
+    const coords = this._getTransformedMouseCoords();
+    const col = this._getCol(coords.x);
+    const row = this._getRow(coords.y);
     for (let i = 0; i < this.liveLetters.length; i++) {
       if (this.liveLetters[i].col === col && this.liveLetters[i].row === row) {
         return this.liveLetters[i];
