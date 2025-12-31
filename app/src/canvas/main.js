@@ -68,110 +68,72 @@ const calculateDynamicSizes = () => {
 
 const setupActionButtons = () => {
   // Create a button to finish the move
-  DOM.finishMoveButton = document.createElement("button");
-  DOM.finishMoveButton.innerText = translate("play");
-  DOM.finishMoveButton.disabled = true;
+  DOM.finishMoveButton = createActionButton(
+    "play",
+    "finish-move-button",
+    () => {
+      if (!grid.hasPlacedAnyLetters()) {
+        showMessage(translate("no_letters_placed"));
+        return;
+      }
+      if (grid.isFirstMove() && !grid.isCenterCellOccupied()) {
+        showMessage(translate("invalid_first_move"));
+        return;
+      }
+      if (!grid.isValidPlacement()) {
+        showMessage(translate("invalid_letter_placement"));
+        return;
+      }
+      if (!grid.isValidWord()) {
+        showMessage(translateFormatted("non_valid_word", grid.getPlacedWord()));
+        return;
+      }
+      if (!grid.validateAllWords()) {
+        showMessage(translate("invalid_words"));
+        return;
+      }
 
-  const finishMoveHandler = () => {
-    if (!grid.hasPlacedAnyLetters()) {
-      showMessage(translate("no_letters_placed"));
-      return;
+      const { score, word } = grid.finalizeMove();
+
+      updateScoreBar(word, score);
+
+      bar.redrawLettersFromPool();
+      bar.save();
     }
-    if (grid.isFirstMove() && !grid.isCenterCellOccupied()) {
-      showMessage(translate("invalid_first_move"));
-      return;
-    }
-    if (!grid.isValidPlacement()) {
-      showMessage(translate("invalid_letter_placement"));
-      return;
-    }
-    if (!grid.isValidWord()) {
-      showMessage(translateFormatted("non_valid_word", grid.getPlacedWord()));
-      return;
-    }
-    if (!grid.validateAllWords()) {
-      showMessage(translate("invalid_words"));
-      return;
-    }
+  );
 
-    const { score, word } = grid.finalizeMove();
-    updateScoreBar(word, score);
-    const newLetters = window.letterPoolService.drawLetters(
-      7 - bar.letters.length
-    );
-    bar.letters.push(...newLetters);
-    bar.save();
-  };
-
-  DOM.finishMoveButton.onclick = finishMoveHandler;
-  DOM.finishMoveButton.ontouchend = (e) => {
-    e.preventDefault();
-    finishMoveHandler();
-  };
-
-  document.getElementById("actions").appendChild(DOM.finishMoveButton);
-
-  // Create a button to reset the placed live letters
-  DOM.resetMoveButton = document.createElement("button");
-  DOM.resetMoveButton.innerText = translate("reset");
-  DOM.resetMoveButton.disabled = true;
-
-  const resetHandler = () => {
+  DOM.resetMoveButton = createActionButton("reset", "reset-move-button", () => {
     // Move all live letters back to the letterbar
     grid.liveLetters.forEach((letter) => {
       bar.addLetter(letter);
     });
     grid.resetMove();
-  };
-
-  DOM.resetMoveButton.onclick = resetHandler;
-  DOM.resetMoveButton.ontouchend = (e) => {
-    e.preventDefault();
-    resetHandler();
-  };
-
-  document.getElementById("actions").appendChild(DOM.resetMoveButton);
+  });
 
   // Create a button to shuffle letters in the letterbar
-  DOM.shuffleButton = document.createElement("button");
-  DOM.shuffleButton.innerText = translate("shuffle");
-  DOM.shuffleButton.disabled = true;
-
-  const shuffleHandler = () => {
-    bar.shuffleLetters();
-  };
-
-  DOM.shuffleButton.onclick = shuffleHandler;
-  DOM.shuffleButton.ontouchend = (e) => {
-    e.preventDefault();
-    shuffleHandler();
-  };
-
-  document.getElementById("actions").appendChild(DOM.shuffleButton);
+  DOM.shuffleButton = createActionButton(
+    "shuffle",
+    "shuffle-letters-button",
+    () => {
+      bar.shuffleLetters();
+    }
+  );
 
   // Create a button to switch out some letters in the letterbar
-  DOM.switchButton = document.createElement("button");
-  DOM.switchButton.innerText = translate("switch_letters");
-  DOM.switchButton.disabled = true;
-
-  const switchHandler = () => {
-    if (!window.gameContext.switchLetters) {
-      window.gameContext.switchLetters = true;
-    } else {
-      if (bar.hasMarkedLetters()) {
-        bar.switchMarkedLetters();
+  DOM.switchButton = createActionButton(
+    "switch_letters",
+    "switch-letters-button",
+    () => {
+      if (!window.gameContext.switchLetters) {
+        window.gameContext.switchLetters = true;
+      } else {
+        if (bar.hasMarkedLetters()) {
+          bar.switchMarkedLetters();
+        }
+        window.gameContext.switchLetters = false;
       }
-      window.gameContext.switchLetters = false;
     }
-  };
-
-  DOM.switchButton.onclick = switchHandler;
-  DOM.switchButton.ontouchend = (e) => {
-    e.preventDefault();
-    switchHandler();
-  };
-
-  document.getElementById("actions").appendChild(DOM.switchButton);
+  );
 
   // Score label
   DOM.scoreLabel = document.createElement("span");
@@ -260,6 +222,20 @@ const setupActionButtons = () => {
 
   // Set the width of game-controls to match the canvas
   document.getElementById("game-controls").style.width = `${grid.getWidth()}px`;
+};
+
+const createActionButton = (text_key, id, eventHandler, disabled = true) => {
+  const button = document.createElement("button");
+  button.innerText = translate(text_key);
+  button.id = id;
+  button.disabled = disabled;
+  button.onclick = eventHandler;
+  button.ontouchend = (e) => {
+    e.preventDefault();
+    eventHandler();
+  };
+  document.getElementById("actions").appendChild(button);
+  return button;
 };
 
 const updateScoreBar = (word, score) => {

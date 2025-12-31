@@ -116,6 +116,14 @@ export class Letterbar {
     return null;
   }
 
+  redrawLettersFromPool() {
+    const lettersNeeded = 7 - this.letters.length;
+    if (lettersNeeded > 0) {
+      const newLetters = window.letterPoolService.drawLetters(lettersNeeded);
+      this.letters.push(...newLetters);
+    }
+  }
+
   removeLetter(letterObj) {
     this.letters = this.letters.filter((l) => l !== letterObj);
     this.lettersOnGrid.push(letterObj.letter);
