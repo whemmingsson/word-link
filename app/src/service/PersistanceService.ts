@@ -1,5 +1,7 @@
 export class PersistanceService {
-  constructor() {}
+  constructor() {
+    console.log("[core service] PersistanceService initialized.");
+  }
 
   save(key: string, data: any) {
     localStorage.setItem(key, JSON.stringify(data));
@@ -11,6 +13,10 @@ export class PersistanceService {
       return JSON.parse(item) as T;
     }
     return null;
+  }
+
+  clear() {
+    localStorage.clear();
   }
 }
 

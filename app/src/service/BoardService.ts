@@ -1,4 +1,5 @@
 import { tileConfigService } from "./TileConfigService";
+import { persistanceService } from "./PersistanceService";
 
 interface PlacedLetter {
   id: number;
@@ -315,6 +316,18 @@ export class BoardService {
   finalizeMove() {
     this.letters.forEach((l) => (l.isLive = false));
     this.liveLetters = [];
+    persistanceService.save("boardState", this.letters);
+  }
+
+  load() {
+    const savedLetters = persistanceService.load<PlacedLetter[]>("boardState");
+    if (savedLetters) {
+      this.letters = savedLetters;
+      this.initializeBoard();
+      this.letters.forEach((letter) => {
+        this.board[letter.row][letter.col] = letter;
+      });
+    }
   }
 
   removeLetter(row: number, col: number) {

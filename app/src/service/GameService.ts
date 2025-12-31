@@ -1,3 +1,4 @@
+import { persistanceService } from "./PersistanceService";
 interface Player {
   id: string;
   name: string;
@@ -25,6 +26,17 @@ export class GameService {
 
   getLastWord() {
     return this.playerOne.lastWord || "";
+  }
+
+  save() {
+    persistanceService.save("playerOne", this.playerOne);
+  }
+
+  load() {
+    const savedPlayer = persistanceService.load<Player>("playerOne");
+    if (savedPlayer) {
+      this.playerOne = savedPlayer;
+    }
   }
 }
 

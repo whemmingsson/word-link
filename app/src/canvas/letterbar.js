@@ -161,4 +161,25 @@ export class Letterbar {
   hasMarkedLetters() {
     return this.markedLettersIndices.length > 0;
   }
+
+  save() {
+    if (window.persistanceService) {
+      window.persistanceService.save("letterbarState", this.letters);
+    }
+    if (window.letterPoolService) {
+      window.letterPoolService.save();
+    }
+  }
+
+  load() {
+    if (window.persistanceService) {
+      const savedLetters = window.persistanceService.load("letterbarState");
+      if (savedLetters) {
+        this.letters = savedLetters;
+      }
+    }
+    if (window.letterPoolService) {
+      window.letterPoolService.load();
+    }
+  }
 }

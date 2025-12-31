@@ -67,28 +67,6 @@ const calculateDynamicSizes = () => {
 };
 
 const setupActionButtons = () => {
-  // Create a start button to initiate the game
-  DOM.startButton = document.createElement("button");
-  DOM.startButton.innerText = translate("start_game");
-
-  const startGameHandler = () => {
-    if (!gameStarted) {
-      startNewGame();
-      DOM.startButton.innerText = translate("abort_game");
-      showMessage(translate("game_started"), "info", 1500);
-    } else {
-      window.location.reload();
-    }
-  };
-
-  DOM.startButton.onclick = startGameHandler;
-  DOM.startButton.ontouchend = (e) => {
-    e.preventDefault();
-    startGameHandler();
-  };
-
-  document.getElementById("actions").appendChild(DOM.startButton);
-
   // Create a button to finish the move
   DOM.finishMoveButton = document.createElement("button");
   DOM.finishMoveButton.innerText = translate("play");
@@ -117,19 +95,12 @@ const setupActionButtons = () => {
     }
 
     const { score, word } = grid.finalizeMove();
-    DOM.scoreLabel.innerText = translateFormatted(
-      "score_label",
-      window.gameService.getScore()
-    );
-    DOM.lastWordLabel.innerText = translateFormatted(
-      "last_word",
-      word,
-      String(score)
-    );
+    updateScoreBar(word, score);
     const newLetters = window.letterPoolService.drawLetters(
       7 - bar.letters.length
     );
     bar.letters.push(...newLetters);
+    bar.save();
   };
 
   DOM.finishMoveButton.onclick = finishMoveHandler;
@@ -264,6 +235,43 @@ const setupActionButtons = () => {
   document
     .getElementById("actions")
     .appendChild(DOM.EXPERIMENTAL.resetZoomButton);
+
+  // Create a start button to initiate the game
+  DOM.startButton = document.createElement("button");
+  DOM.startButton.innerText = translate("start_game");
+
+  const startGameHandler = () => {
+    if (!gameStarted) {
+      startNewGame();
+      showMessage(translate("game_started"), "info", 1500);
+    } else {
+      window.persistanceService.clear();
+      window.location.reload();
+    }
+  };
+
+  DOM.startButton.onclick = startGameHandler;
+  DOM.startButton.ontouchend = (e) => {
+    e.preventDefault();
+    startGameHandler();
+  };
+
+  document.getElementById("game-controls").appendChild(DOM.startButton);
+
+  // Set the width of game-controls to match the canvas
+  document.getElementById("game-controls").style.width = `${grid.getWidth()}px`;
+};
+
+const updateScoreBar = (word, score) => {
+  DOM.scoreLabel.innerText = translateFormatted(
+    "score_label",
+    window.gameService.getScore()
+  );
+  DOM.lastWordLabel.innerText = translateFormatted(
+    "last_word",
+    word,
+    String(score)
+  );
 };
 
 window.setup = function () {
@@ -285,11 +293,61 @@ window.setup = function () {
   setupActionButtons();
 
   textAlign(CENTER, CENTER);
+
+  if (window.persistanceService) {
+    const gameStartedSaved = window.persistanceService.load("gameStarted");
+    if (gameStartedSaved) {
+      loadSavedGame();
+    }
+  }
 };
 
 const startNewGame = () => {
+  if (!window.persistanceService) {
+    console.error(
+      "[main] PersistanceService not available. Cannot start new game."
+    );
+    return;
+  }
+  window.persistanceService.clear();
+
   bar.init();
+  bar.save();
+
+  window.persistanceService.save("gameStarted", true);
+
   gameStarted = true;
+  DOM.startButton.innerText = translate("abort_game");
+};
+
+const loadSavedGame = () => {
+  if (!window.persistanceService) {
+    console.error(
+      "[main] PersistanceService not available. Cannot load saved game."
+    );
+    return;
+  }
+
+  console.log("[main] Loading saved game...");
+
+  grid.load();
+  bar.load();
+
+  if (window.gameService) {
+    window.gameService.load();
+  } else {
+    console.error(
+      "[main] GameService not available. Cannot load saved game score."
+    );
+  }
+
+  updateScoreBar(
+    window.gameService ? window.gameService.getLastWord() : "",
+    "?"
+  );
+
+  gameStarted = true;
+  DOM.startButton.innerText = translate("abort_game");
 };
 
 window.draw = function () {
@@ -391,6 +449,13 @@ window.windowResized = function () {
   bar.width = grid.getWidth();
 
   resizeCanvas(grid.getWidth(), grid.getHeight() + bar.getHeight() + margin);
+
+  // Update game-controls width to match canvas
+  if (document.getElementById("game-controls")) {
+    document.getElementById(
+      "game-controls"
+    ).style.width = `${grid.getWidth()}px`;
+  }
 };
 
 window.mousePressed = function () {

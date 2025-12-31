@@ -1,5 +1,6 @@
 import { getLetterPool } from "../config/letterConfig";
 import type { LetterTile } from "../types/LetterTile";
+import { persistanceService } from "./PersistanceService";
 
 export class LetterPoolService {
   letterPool: LetterTile[];
@@ -13,6 +14,17 @@ export class LetterPoolService {
 
   init() {
     this.letterPool = getLetterPool();
+  }
+
+  save() {
+    persistanceService.save("letterPool", this.letterPool);
+  }
+
+  load() {
+    const savedPool = persistanceService.load<LetterTile[]>("letterPool");
+    if (savedPool) {
+      this.letterPool = savedPool;
+    }
   }
 
   drawLetters(count: number): LetterTile[] {

@@ -17,17 +17,28 @@
     <div id="game-stats"></div>
     <div id="canvas-wrapper"></div>
     <div id="actions"></div>
+    <div id="game-controls"></div>
     
     <script type="module">
       // Import services
-      import { dictionaryService, letterPoolService, boardService, tileConfigService, translationService, gameService } from './src/service/services';
+      import { 
+        dictionaryService, 
+        letterPoolService, 
+        boardService, 
+        tileConfigService, 
+        translationService, 
+        gameService, 
+        persistanceService } from './src/service/services';
+
       // Make available globally for p5.js sketches
       window.dictionaryService = dictionaryService;
       window.letterPoolService = letterPoolService;
       window.boardService = boardService;
       window.tileConfigService = tileConfigService;
       window.translationService = translationService;
+      window.persistanceService = persistanceService;
       window.gameService = gameService;
+
       window.servicesReady = true;
     </script>
     <script type="module" src="./src/canvas/renderUtils.js"></script>

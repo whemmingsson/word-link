@@ -174,6 +174,7 @@ export class Grid {
       window.gameService.updateScore(score);
       window.boardService.finalizeMove();
       window.gameService.setLastWord(word);
+      window.gameService.save();
     }
     this.lockLetters();
     return { score, word };
@@ -239,5 +240,11 @@ export class Grid {
       return window.boardService.isFirstMove();
     }
     return false;
+  }
+
+  load() {
+    if (window.boardService) {
+      window.boardService.load();
+    }
   }
 }
