@@ -50,8 +50,12 @@ body {
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
 }
 
-#actions button {
+#actions button,
+.icon-button {
+    /* Responsive button sizing */
     padding: 0.5rem 1rem;
+    min-width: 44px; /* Minimum touch target size for mobile */
+    min-height: 44px;
     font-size: 1rem;
     border: none;
     border-radius: 4px;
@@ -61,11 +65,50 @@ body {
     transition: background-color 0.3s;
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem; /* Space between icon and text */
 }
 
-#actions button:disabled {
+/* Mobile: Show icons only, hide text */
+@media (max-width: 767px) {
+    #actions button,
+    .icon-button {
+        padding: 0.6rem;
+    }
+    
+    #actions button .button-text,
+    .icon-button .button-text {
+        display: none;
+    }
+}
+
+/* Desktop/Tablet: Hide icons, show text only */
+@media (min-width: 768px) {
+    #actions button svg,
+    .icon-button svg {
+        display: none;
+    }
+}
+
+#actions button svg,
+.icon-button svg {
+    /* Icon sizing within buttons */
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+}
+
+#actions button:disabled,
+.icon-button:disabled {
     background-color: #333;
     color: #777;
+}
+
+#actions button:disabled svg,
+.icon-button:disabled svg {
+    opacity: 0.5;
 }
 
 #game-stats {

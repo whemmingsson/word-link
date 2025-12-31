@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "lucide": "^0.562.0",
     "qrcode": "^1.5.4",
     "vitest": "^4.0.16"
   },

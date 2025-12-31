@@ -6,6 +6,14 @@ import { WildcardSelector } from "./wildcardSelector.js";
 import { showMessage } from "./messageBox.js";
 import { translate, translateFormatted } from "./translationUtils.js";
 import { ZoomController } from "./zoomController.js";
+import {
+  createElement,
+  Check,
+  RotateCcw,
+  Shuffle,
+  RefreshCw,
+  Maximize2,
+} from "lucide";
 
 let grid;
 let bar;
@@ -150,8 +158,21 @@ const setupActionButtons = () => {
   // ZOOM CONTROLS - Zoom is now always enabled
   // Reset zoom button to return to default view
   DOM.EXPERIMENTAL.resetZoomButton = document.createElement("button");
-  DOM.EXPERIMENTAL.resetZoomButton.innerText = translate("reset_zoom");
   DOM.EXPERIMENTAL.resetZoomButton.id = "reset-zoom-button";
+  DOM.EXPERIMENTAL.resetZoomButton.className = "icon-button";
+
+  // Add icon and accessibility labels
+  const zoomLabel = translate("reset_zoom");
+  DOM.EXPERIMENTAL.resetZoomButton.setAttribute("aria-label", zoomLabel);
+  DOM.EXPERIMENTAL.resetZoomButton.setAttribute("title", zoomLabel);
+  const zoomIconElement = createElement(Maximize2, { "stroke-width": 2 });
+  DOM.EXPERIMENTAL.resetZoomButton.appendChild(zoomIconElement);
+
+  // Add text in a span for responsive display control via CSS
+  const zoomTextSpan = document.createElement("span");
+  zoomTextSpan.className = "button-text";
+  zoomTextSpan.innerText = zoomLabel;
+  DOM.EXPERIMENTAL.resetZoomButton.appendChild(zoomTextSpan);
   const resetZoomHandler = () => {
     zoomController.reset();
   };
@@ -192,11 +213,41 @@ const setupActionButtons = () => {
   document.getElementById("game-controls").style.width = `${grid.getWidth()}px`;
 };
 
+// Map action keys to Lucide icons for compact mobile display
+const ACTION_ICONS = {
+  play: Check, // Finish move (checkmark)
+  reset: RotateCcw, // Reset move (counter-clockwise arrow)
+  shuffle: Shuffle, // Shuffle letters
+  switch_letters: RefreshCw, // Switch letters (refresh)
+};
+
 const createActionButton = (text_key, id, eventHandler, disabled = true) => {
   const button = document.createElement("button");
-  button.innerText = translate(text_key);
   button.id = id;
   button.disabled = disabled;
+  button.className = "icon-button";
+
+  // Set aria-label and title for accessibility using translated text
+  const label = translate(text_key);
+  button.setAttribute("aria-label", label);
+  button.setAttribute("title", label);
+
+  // Create icon element using Lucide's createElement for vanilla JS
+  const IconComponent = ACTION_ICONS[text_key];
+  if (IconComponent) {
+    const iconElement = createElement(IconComponent, { "stroke-width": 2 });
+    button.appendChild(iconElement);
+
+    // Add text in a span for responsive display control via CSS
+    const textSpan = document.createElement("span");
+    textSpan.className = "button-text";
+    textSpan.innerText = label;
+    button.appendChild(textSpan);
+  } else {
+    // Fallback to text if no icon mapped
+    button.innerText = label;
+  }
+
   button.onclick = eventHandler;
   button.ontouchend = (e) => {
     e.preventDefault();
@@ -373,16 +424,22 @@ const handleDom = () => {
   );
   setIfValueChanged(DOM.switchButton, "disabled", hasPlacedLetters);
 
-  if (
-    window.gameContext.switchLetters &&
-    DOM.switchButton.innerText !== translate("confirm_switch")
-  ) {
-    DOM.switchButton.innerText = translate("confirm_switch");
-  } else if (
-    !window.gameContext.switchLetters &&
-    DOM.switchButton.innerText !== translate("switch_letters")
-  ) {
-    DOM.switchButton.innerText = translate("switch_letters");
+  // Update switch button text when toggling between switch and confirm modes
+  const switchTextSpan = DOM.switchButton.querySelector(".button-text");
+  if (window.gameContext.switchLetters) {
+    const confirmText = translate("confirm_switch");
+    if (switchTextSpan && switchTextSpan.innerText !== confirmText) {
+      switchTextSpan.innerText = confirmText;
+      DOM.switchButton.setAttribute("aria-label", confirmText);
+      DOM.switchButton.setAttribute("title", confirmText);
+    }
+  } else {
+    const switchText = translate("switch_letters");
+    if (switchTextSpan && switchTextSpan.innerText !== switchText) {
+      switchTextSpan.innerText = switchText;
+      DOM.switchButton.setAttribute("aria-label", switchText);
+      DOM.switchButton.setAttribute("title", switchText);
+    }
   }
 };
 
