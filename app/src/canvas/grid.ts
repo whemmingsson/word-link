@@ -69,7 +69,8 @@ export class Grid {
       for (let col = 0; col < this.cols; col++) {
         const tileType = window.gridConfigService.getTileTypeAt(col, row);
 
-        renderUtils.renderBoardTileAtPosition(
+        // This renders the board tile (including special tiles)
+        renderUtils.renderBoardCellAtPosition(
           col * this.cellSize + this.cellSize / 2,
           row * this.cellSize + this.cellSize / 2,
           tileType,
@@ -98,6 +99,7 @@ export class Grid {
       coords.y
     );
 
+    // Render placed letters on the grid
     for (const letter of window.boardService.getPlacedLetters()) {
       if (
         window.gameContext.draggedLetter &&
@@ -107,7 +109,11 @@ export class Grid {
         continue;
       }
 
-      renderUtils.renderTileWithLetter(letter, this.cellSize);
+      renderUtils.renderTileWithLetter(
+        letter,
+        this.cellSize,
+        window.gameContext.letterTileTextSize
+      );
     }
   }
 

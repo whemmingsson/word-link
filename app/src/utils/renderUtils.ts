@@ -28,13 +28,16 @@ const renderSquare = (
   p().rect(x, y, width, width);
 };
 
+// One of the most central rendering functions - renders a letter tile at specified position
 const renderLetterTile = (
   letterObj: { letter: string; value?: number },
   x: number,
   y: number,
   cellSize: number,
   fillColor: string,
-  borderColor: string | null = null
+  borderColor: string | null = null,
+  textSizeValue = 28,
+  scoreTextSize = 14
 ) => {
   const tileX = x - cellSize / 2;
   const tileY = y - cellSize / 2;
@@ -57,13 +60,12 @@ const renderLetterTile = (
 
   // Draw letter
   const letter = letterObj.letter;
-  renderText(letter, x, y, undefined, window.gameContext.letterTileTextSize);
+  renderText(letter, x, y, undefined, textSizeValue);
 
   // Draw value in top right corner
   if (letterObj.value) {
-    const scoreTextSize = window.gameContext.letterTileScoreTextSize;
-    const valueX = tileX + cellSize - borderWidth - scoreTextSize;
-    const valueY = tileY + borderWidth + scoreTextSize;
+    const valueX = tileX + cellSize - borderWidth - scoreTextSize / 1.5;
+    const valueY = tileY + borderWidth + scoreTextSize / 1.5;
     renderText(
       letterObj.value.toString(),
       valueX,
@@ -118,7 +120,11 @@ const renderShadedCellIfTileIsDragged = (
   }
 };
 
-const renderTileWithLetter = (letter: Letter, cellSize: number) => {
+const renderTileWithLetter = (
+  letter: Letter,
+  cellSize: number,
+  textSizeValue = 28
+) => {
   const x = letter.col! * cellSize + cellSize / 2;
   const y = letter.row! * cellSize + cellSize / 2;
 
@@ -132,20 +138,13 @@ const renderTileWithLetter = (letter: Letter, cellSize: number) => {
       : styleUtils.tile.fillColorPlaced,
     letter.isLive
       ? styleUtils.tile.borderColorLive
-      : styleUtils.tile.borderColorPlaced
+      : styleUtils.tile.borderColorPlaced,
+    textSizeValue,
+    window.gameContext.letterTileScoreTextSize
   );
 };
 
-const renderDraggedTile = (
-  letter: {
-    col: number;
-    row: number;
-    isLive: boolean;
-    letter: string;
-    value?: number;
-  },
-  cellSize: number
-) => {
+const renderDraggedTile = (letter: Letter, cellSize: number) => {
   renderLetterTile(
     letter,
     p().mouseX,
@@ -160,7 +159,9 @@ const renderLetterTileAtPosition = (
   letter: Letter,
   x: number,
   y: number,
-  cellSize: number
+  cellSize: number,
+  textSizeValue = 28,
+  scoreTextSize = 14
 ) => {
   renderLetterTile(
     letter,
@@ -168,11 +169,13 @@ const renderLetterTileAtPosition = (
     y,
     cellSize,
     styleUtils.tile.fillColorLive,
-    styleUtils.tile.borderColorLive
+    styleUtils.tile.borderColorLive,
+    textSizeValue,
+    scoreTextSize
   );
 };
 
-const renderBoardTileAtPosition = (
+const renderBoardCellAtPosition = (
   x: number,
   y: number,
   tile: number,
@@ -252,7 +255,7 @@ export const renderUtils = {
   renderTileWithLetter,
   renderDraggedTile,
   renderLetterTileAtPosition,
-  renderBoardTileAtPosition,
+  renderBoardCellAtPosition,
   renderLetterHighlightAtPosition,
   renderGridOverlay,
   renderCenterStar,

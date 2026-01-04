@@ -89,15 +89,12 @@ const s = (p5: P5WithTouch) => {
 
     // Calculate cell size based on grid (15x15) + margin
     const maxCellWidth = Math.floor((containerWidth - margin * 2) / 15);
-
     cellSize = Math.max(28, Math.min(60, maxCellWidth));
-    window.gameContext.cellSize = cellSize;
-    gridTextSize = Math.floor(cellSize * 0.4);
-    window.gameContext.gridTextSize = gridTextSize;
-    letterTileTextSize = Math.floor(cellSize * 0.5);
-    window.gameContext.letterTileTextSize = letterTileTextSize;
-    letterTileScoreTextSize = Math.floor(cellSize * 0.2);
-    window.gameContext.letterTileScoreTextSize = letterTileScoreTextSize;
+
+    window.gameContext.cellSize = Math.max(28, Math.min(60, maxCellWidth));
+    window.gameContext.gridTextSize = Math.floor(cellSize * 0.4);
+    window.gameContext.letterTileTextSize = Math.floor(cellSize * 0.5);
+    window.gameContext.letterTileScoreTextSize = Math.floor(cellSize * 0.25);
   };
 
   const setupActionButtons = () => {

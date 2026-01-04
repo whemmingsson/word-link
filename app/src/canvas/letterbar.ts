@@ -69,7 +69,8 @@ export class Letterbar {
         this.letters[i],
         x,
         y,
-        this.tileCellSize
+        this.tileCellSize,
+        32
       );
 
       // Highlight if marked
@@ -224,5 +225,7 @@ export class Letterbar {
       10,
       Math.min(horizontalConstraint, verticalConstraint)
     );
+
+    console.log(`Letterbar tile cell size updated to ${this.tileCellSize}`);
   }
 }
