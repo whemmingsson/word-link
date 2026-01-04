@@ -1,13 +1,15 @@
 import type { PlacedLetter } from "../types/PlacedLetter.js";
-import { mouseX, mouseY } from "../utils/p5Utils.js";
 // @ts-ignore: Ignore missing module error for renderUtils for now
 import { renderUtils } from "./renderUtils.js";
+import type P5 from "p5";
 export class Grid {
+  p5: P5;
   rows: number;
   cols: number;
   cellSize: number;
   liveLetters: PlacedLetter[];
-  constructor(rows: number, cols: number, cellSize: number) {
+  constructor(p5: P5, rows: number, cols: number, cellSize: number) {
+    this.p5 = p5;
     this.rows = rows;
     this.cols = cols;
     this.cellSize = cellSize;
@@ -37,12 +39,12 @@ export class Grid {
     ) {
       // Transform screen coordinates to canvas coordinates
       return window.gameContext.zoomController.screenToCanvas(
-        mouseX(),
-        mouseY()
+        this.p5.mouseX,
+        this.p5.mouseY
       );
     }
     // No zoom - use raw mouse coordinates
-    return { x: mouseX(), y: mouseY() };
+    return { x: this.p5.mouseX, y: this.p5.mouseY };
   }
 
   _cellIsOccupied(row: number, col: number) {

@@ -1,40 +1,41 @@
 import { translate } from "./translationUtils.js";
 export class WildcardSelector {
-  constructor() {
+  constructor(p5) {
+    this.p5 = p5;
     this.letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".split("");
     this.numberOfColumns = 7;
     this.cellSize = 40;
     this.width = 400;
     this.height = 350;
-    this.x = width / 2 - this.width / 2;
-    this.y = height / 2 - this.height / 2;
+    this.x = this.p5.width / 2 - this.width / 2;
+    this.y = this.p5.height / 2 - this.height / 2;
     this.startX = this.x + 40;
     this.startY = this.y + 80;
   }
 
   _mouseIsOver(x, y) {
     return (
-      mouseX > x &&
-      mouseX < x + this.cellSize &&
-      mouseY > y &&
-      mouseY < y + this.cellSize
+      this.p5.mouseX > x &&
+      this.p5.mouseX < x + this.cellSize &&
+      this.p5.mouseY > y &&
+      this.p5.mouseY < y + this.cellSize
     );
   }
 
   render() {
     // Semi-transparent overlay
-    fill(0, 0, 0, 180);
-    rect(0, 0, width, height);
+    this.p5.fill(0, 0, 0, 180);
+    this.p5.rect(0, 0, this.p5.width, this.p5.height);
 
     // White dialog box
-    fill(255);
-    rect(this.x, this.y, this.width, this.height, 10);
+    this.p5.fill(255);
+    this.p5.rect(this.x, this.y, this.width, this.height, 10);
 
     // Title
-    fill(0);
-    textSize(20);
-    textAlign(CENTER);
-    text(translate("select_letter"), width / 2, this.y + 40);
+    this.p5.fill(0);
+    this.p5.textSize(20);
+    this.p5.textAlign(this.p5.CENTER);
+    this.p5.text(translate("select_letter"), this.p5.width / 2, this.y + 40);
 
     // Draw letter grid (A-Z)
     for (let i = 0; i < this.letters.length; i++) {
@@ -45,16 +46,20 @@ export class WildcardSelector {
 
       // Highlight on hover
       if (this._mouseIsOver(x, y)) {
-        fill(200, 220, 255);
-        cursor(HAND);
+        this.p5.fill(200, 220, 255);
+        this.p5.cursor(this.p5.HAND);
       } else {
-        fill(240);
+        this.p5.fill(240);
       }
 
-      rect(x, y, this.cellSize, this.cellSize, 5);
-      fill(0);
-      textSize(24);
-      text(this.letters[i], x + this.cellSize / 2, y + this.cellSize / 2);
+      this.p5.rect(x, y, this.cellSize, this.cellSize, 5);
+      this.p5.fill(0);
+      this.p5.textSize(24);
+      this.p5.text(
+        this.letters[i],
+        x + this.cellSize / 2,
+        y + this.cellSize / 2
+      );
     }
   }
 

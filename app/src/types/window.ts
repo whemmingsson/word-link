@@ -6,6 +6,7 @@ import type { TranslationService } from "../service/TranslationService";
 import type { GameService } from "../service/GameService";
 import type { PersistanceService } from "../service/PersistanceService";
 import type { GameContext } from "./GameContext.ts";
+import type p5 from "p5";
 
 declare global {
   interface Window {
@@ -24,17 +25,9 @@ declare global {
     // Service ready flag
     servicesReady: boolean;
 
-    // p5.js globals
-    mouseX: number;
-    mouseY: number;
-    mouseIsPressed: boolean;
+    // p5.js instance
+    p5: p5;
   }
-
-  // p5.js global functions used in the application
-  function translate(x: number, y: number): void;
-  function scale(s: number): void;
-  function scale(x: number, y: number): void;
-  function constrain(n: number, low: number, high: number): number;
 }
 
 export {};

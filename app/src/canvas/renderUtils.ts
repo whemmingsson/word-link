@@ -1,30 +1,39 @@
+import { p } from "../utils/p5Utils";
+//@ts-ignore: Ignore missing p5 module error for now
 import { styleUtils } from "./styleUtils";
 
+export class RenderUtils {}
+
 const renderText = (
-  textContent,
-  x,
-  y,
+  textContent: string,
+  x: number,
+  y: number,
   textColor = styleUtils.tile.textColor,
   textSizeValue = 28
 ) => {
-  fill(textColor);
-  noStroke();
-  textSize(textSizeValue);
-  text(textContent, x, y);
+  p().fill(textColor);
+  p().noStroke();
+  p().textSize(textSizeValue);
+  p().text(textContent, x, y);
 };
 
-const renderSquare = (x, y, width, fillColor) => {
-  fill(fillColor);
-  rect(x, y, width, width);
+const renderSquare = (
+  x: number,
+  y: number,
+  width: number,
+  fillColor: string
+) => {
+  p().fill(fillColor);
+  p().rect(x, y, width, width);
 };
 
 const renderLetterTile = (
-  letterObj,
-  x,
-  y,
-  cellSize,
-  fillColor,
-  borderColor
+  letterObj: { letter: string; value?: number },
+  x: number,
+  y: number,
+  cellSize: number,
+  fillColor: string,
+  borderColor: string | null = null
 ) => {
   const tileX = x - cellSize / 2;
   const tileY = y - cellSize / 2;
@@ -33,11 +42,11 @@ const renderLetterTile = (
 
   // Draw main tile
   if (borderColor) {
-    stroke(borderColor);
+    p().stroke(borderColor);
   }
-  strokeWeight(borderWidth);
-  fill(fillColor);
-  rect(
+  p().strokeWeight(borderWidth);
+  p().fill(fillColor);
+  p().rect(
     tileX + borderWidth,
     tileY + borderWidth,
     cellSize - borderWidth * 2,
@@ -64,22 +73,13 @@ const renderLetterTile = (
   }
 };
 
-const renderGridLines = (rows, cols, cellSize) => {
-  stroke(styleUtils.grid.lineColor);
-  strokeWeight(1);
-
-  // Draw horizontal lines
-  for (let row = 0; row <= rows; row++) {
-    line(0, row * cellSize, cols * cellSize, row * cellSize);
-  }
-
-  // Draw vertical lines
-  for (let col = 0; col <= cols; col++) {
-    line(col * cellSize, 0, col * cellSize, rows * cellSize);
-  }
-};
-
-const shouldRenderShadedCell = (row, col, rows, cols, cellIsOccupiedFunc) => {
+const shouldRenderShadedCell = (
+  row: number,
+  col: number,
+  rows: number,
+  cols: number,
+  cellIsOccupiedFunc: (row: number, col: number) => boolean
+) => {
   return (
     col >= 0 &&
     col < cols &&
@@ -90,7 +90,7 @@ const shouldRenderShadedCell = (row, col, rows, cols, cellIsOccupiedFunc) => {
   );
 };
 
-const renderShadedCell = (row, col, cellSize) => {
+const renderShadedCell = (row: number, col: number, cellSize: number) => {
   renderSquare(
     col * cellSize,
     row * cellSize,
@@ -100,16 +100,16 @@ const renderShadedCell = (row, col, cellSize) => {
 };
 
 const renderShadedCellIfTileIsDragged = (
-  rows,
-  cols,
-  cellSize,
-  cellIsOccupiedFunc,
-  transformedMouseX = null,
-  transformedMouseY = null
+  rows: number,
+  cols: number,
+  cellSize: number,
+  cellIsOccupiedFunc: (row: number, col: number) => boolean,
+  transformedMouseX: number | null = null,
+  transformedMouseY: number | null = null
 ) => {
   // Use transformed coordinates if provided (for zoom support), otherwise use raw mouseX/mouseY
-  const mX = transformedMouseX !== null ? transformedMouseX : mouseX;
-  const mY = transformedMouseY !== null ? transformedMouseY : mouseY;
+  const mX = transformedMouseX !== null ? transformedMouseX : p().mouseX;
+  const mY = transformedMouseY !== null ? transformedMouseY : p().mouseY;
   const col = Math.floor(mX / cellSize);
   const row = Math.floor(mY / cellSize);
   if (shouldRenderShadedCell(row, col, rows, cols, cellIsOccupiedFunc)) {
@@ -117,7 +117,16 @@ const renderShadedCellIfTileIsDragged = (
   }
 };
 
-const renderTileWithLetter = (letter, cellSize) => {
+const renderTileWithLetter = (
+  letter: {
+    col: number;
+    row: number;
+    isLive: boolean;
+    letter: string;
+    value?: number;
+  },
+  cellSize: number
+) => {
   const x = letter.col * cellSize + cellSize / 2;
   const y = letter.row * cellSize + cellSize / 2;
 
@@ -135,18 +144,38 @@ const renderTileWithLetter = (letter, cellSize) => {
   );
 };
 
-const renderDraggedTile = (letter, cellSize) => {
+const renderDraggedTile = (
+  letter: {
+    col: number;
+    row: number;
+    isLive: boolean;
+    letter: string;
+    value?: number;
+  },
+  cellSize: number
+) => {
   renderLetterTile(
     letter,
-    mouseX,
-    mouseY,
+    p().mouseX,
+    p().mouseY,
     cellSize,
     styleUtils.tile.fillColorLive,
     styleUtils.tile.borderColorLive
   );
 };
 
-const renderLetterTileAtPosition = (letter, x, y, cellSize) => {
+const renderLetterTileAtPosition = (
+  letter: {
+    col: number;
+    row: number;
+    isLive: boolean;
+    letter: string;
+    value?: number;
+  },
+  x: number,
+  y: number,
+  cellSize: number
+) => {
   renderLetterTile(
     letter,
     x,
@@ -157,12 +186,17 @@ const renderLetterTileAtPosition = (letter, x, y, cellSize) => {
   );
 };
 
-const renderBoardTileAtPosition = (x, y, tile, cellSize) => {
+const renderBoardTileAtPosition = (
+  x: number,
+  y: number,
+  tile: number,
+  cellSize: number
+) => {
   const tileConfig =
     styleUtils.grid.specialTiles[tile] || styleUtils.grid.specialTiles[0];
 
   if (tile === 0) {
-    stroke(0);
+    p().stroke(0);
     renderSquare(
       x - cellSize / 2,
       y - cellSize / 2,
@@ -182,13 +216,17 @@ const renderBoardTileAtPosition = (x, y, tile, cellSize) => {
   );
 };
 
-const renderLetterHighlightAtPosition = (x, y, cellSize) => {
+const renderLetterHighlightAtPosition = (
+  x: number,
+  y: number,
+  cellSize: number
+) => {
   const strokeWeightValue = 4;
   const borderRadius = 5;
-  noFill();
-  stroke(styleUtils.letterBar.markedLetterBorderColor);
-  strokeWeight(strokeWeightValue);
-  rect(
+  p().noFill();
+  p().stroke(styleUtils.letterBar.markedLetterBorderColor);
+  p().strokeWeight(strokeWeightValue);
+  p().rect(
     x - cellSize / 2 + strokeWeightValue / 2,
     y - cellSize / 2 + strokeWeightValue / 2,
     cellSize - strokeWeightValue,
@@ -198,31 +236,30 @@ const renderLetterHighlightAtPosition = (x, y, cellSize) => {
   styleUtils.resetStyles();
 };
 
-const renderGridOverlay = (rows, cols, cellSize) => {
-  fill(0, 0, 0, 180);
-  rect(0, 0, cols * cellSize, rows * cellSize);
+const renderGridOverlay = (rows: number, cols: number, cellSize: number) => {
+  p().fill(0, 0, 0, 180);
+  p().rect(0, 0, cols * cellSize, rows * cellSize);
 };
 
-const renderCenterStar = (x, y, cellSize) => {
+const renderCenterStar = (x: number, y: number, cellSize: number) => {
   const starSize = cellSize / 3;
-  fill(styleUtils.grid.centerShapeFillColor);
-  noStroke();
-  beginShape();
+  p().fill(styleUtils.grid.centerShapeFillColor);
+  p().noStroke();
+  p().beginShape();
   for (let i = 0; i < 5; i++) {
-    const angle = i * (TWO_PI / 5) - HALF_PI;
-    const sx = x + cos(angle) * starSize;
-    const sy = y + sin(angle) * starSize;
-    vertex(sx, sy);
-    const innerAngle = angle + PI / 5;
-    const innerX = x + cos(innerAngle) * (starSize / 2);
-    const innerY = y + sin(innerAngle) * (starSize / 2);
-    vertex(innerX, innerY);
+    const angle = i * (p().TWO_PI / 5) - p().HALF_PI;
+    const sx = x + p().cos(angle) * starSize;
+    const sy = y + p().sin(angle) * starSize;
+    p().vertex(sx, sy);
+    const innerAngle = angle + p().PI / 5;
+    const innerX = x + p().cos(innerAngle) * (starSize / 2);
+    const innerY = y + p().sin(innerAngle) * (starSize / 2);
+    p().vertex(innerX, innerY);
   }
-  endShape(CLOSE);
+  p().endShape(p().CLOSE);
 };
 
 export const renderUtils = {
-  renderGridLines,
   renderShadedCellIfTileIsDragged,
   renderTileWithLetter,
   renderDraggedTile,

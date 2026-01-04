@@ -1,3 +1,4 @@
+import type P5 from "p5";
 export class ZoomController {
   zoom: number;
   panX: number;
@@ -7,7 +8,9 @@ export class ZoomController {
   lastMouseY: number;
   minZoom: number;
   maxZoom: number;
-  constructor() {
+  p5: P5;
+  constructor(p5: P5) {
+    this.p5 = p5;
     this.zoom = 1;
     this.panX = 0;
     this.panY = 0;
@@ -19,14 +22,14 @@ export class ZoomController {
   }
 
   applyTransform() {
-    translate(this.panX, this.panY);
-    scale(this.zoom);
+    this.p5.translate(this.panX, this.panY);
+    this.p5.scale(this.zoom);
   }
 
   handleZoom(delta: number, centerX: number, centerY: number) {
     const oldZoom = this.zoom;
     this.zoom -= delta * 0.001;
-    this.zoom = constrain(this.zoom, this.minZoom, this.maxZoom);
+    this.zoom = this.p5.constrain(this.zoom, this.minZoom, this.maxZoom);
 
     // Zoom towards mouse position
     const zoomChange = this.zoom - oldZoom;

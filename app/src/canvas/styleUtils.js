@@ -1,5 +1,7 @@
 import { translate } from "./translationUtils.js";
 
+import { p } from "../utils/p5Utils.js";
+
 export const styleUtils = {
   sketch: {
     backgroundColor: "#000000f0",
@@ -36,8 +38,8 @@ export const styleUtils = {
   },
 
   resetStyles() {
-    noFill();
-    strokeWeight(2);
-    noStroke();
+    p().noFill();
+    p().strokeWeight(2);
+    p().noStroke();
   },
 };

@@ -2,7 +2,8 @@ import { renderUtils } from "./renderUtils";
 import { styleUtils } from "./styleUtils";
 
 export class Letterbar {
-  constructor(x, y, width) {
+  constructor(p5, x, y, width) {
+    this.p5 = p5;
     this.x = x;
     this.y = y;
     this.width = width;
@@ -31,10 +32,10 @@ export class Letterbar {
   }
 
   render() {
-    fill(styleUtils.letterBar.backgroundColor);
-    stroke(styleUtils.letterBar.borderColor);
-    strokeWeight(1);
-    rect(this.x, this.y, this.width, this.height);
+    this.p5.fill(styleUtils.letterBar.backgroundColor);
+    this.p5.stroke(styleUtils.letterBar.borderColor);
+    this.p5.strokeWeight(1);
+    this.p5.rect(this.x, this.y, this.width, this.height);
     this.renderLetters();
   }
 
@@ -75,10 +76,10 @@ export class Letterbar {
 
   mouseIsOver() {
     return (
-      mouseX >= this.x &&
-      mouseX < this.x + this.width &&
-      mouseY >= this.y &&
-      mouseY < this.y + this.height
+      this.p5.mouseX >= this.x &&
+      this.p5.mouseX < this.x + this.width &&
+      this.p5.mouseY >= this.y &&
+      this.p5.mouseY < this.y + this.height
     );
   }
 
@@ -97,7 +98,9 @@ export class Letterbar {
     }
   }
 
-  getLetterAtPosition(x, y) {
+  getLetterAtMousePosition() {
+    const x = this.p5.mouseX;
+    const y = this.p5.mouseY;
     // Larger hit area for better touch support (1.2x the cell size)
     const hitAreaMultiplier = 1.2;
     for (let i = 0; i < this.letters.length; i++) {

@@ -12,9 +12,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/p5": "^1.7.7",
     "lucide": "^0.562.0",
     "qrcode": "^1.5.4",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "p5": "^2.1.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
