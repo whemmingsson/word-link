@@ -467,7 +467,7 @@ const s = (p5: P5WithTouch) => {
           row: window.gameContext.draggedLetter.row!,
           isLive: true,
         },
-        cellSize
+        bar.tileCellSize
       );
     }
 
