@@ -2,31 +2,35 @@ import type { Letter } from "../types/Letter";
 import { renderUtils } from "../utils/renderUtils";
 import { styleUtils } from "../utils/styleUtils";
 import type P5 from "p5";
+import { Tile } from "./tile";
+
+const toTile = (letter: Letter, x: number, y: number): Tile => {
+  const tile = new Tile(x, y, letter);
+  return tile;
+};
 
 export class Letterbar {
   p5: P5;
   x: number;
   y: number;
   width: number;
-  letters: Letter[];
-  lettersOnGrid: Letter[];
   padding: number;
   height: number;
   markedLettersIndices: number[];
   tileCellSize: number;
   spacingMultiplier: number;
+  tiles: Tile[]; // New way to manage letter tiles
   constructor(p5: P5, x: number, y: number, width: number) {
     this.p5 = p5;
     this.x = x;
     this.y = y;
     this.width = width;
-    this.letters = [];
-    this.lettersOnGrid = [];
     this.padding = 5;
     this.height = 70;
     this.markedLettersIndices = [];
     this.tileCellSize = 64;
     this.spacingMultiplier = 1.1;
+    this.tiles = [];
     this.updateTileCellSize();
   }
 
@@ -52,33 +56,24 @@ export class Letterbar {
   }
 
   renderLetters() {
-    for (let i = 0; i < this.letters.length; i++) {
+    for (let i = 0; i < this.tiles.length; i++) {
       // Skip rendering if this letter is being dragged from the bar
       if (
         window.gameContext.draggedLetter &&
         window.gameContext.dragSource === "bar" &&
-        this.letters[i] === window.gameContext.draggedLetter
+        this.tiles[i].getLetter() === window.gameContext.draggedLetter
       ) {
         continue;
       }
 
-      const x = this._getLetterX(i);
-      const y = this._getLetterY();
+      this.tiles[i].render();
 
-      renderUtils.renderLetterTileAtPosition(
-        this.letters[i],
-        x,
-        y,
-        this.tileCellSize,
-        32
-      );
-
-      // Highlight if marked
-      if (
-        window.gameContext.switchLetters &&
-        this.markedLettersIndices.includes(i)
-      ) {
-        renderUtils.renderLetterHighlightAtPosition(x, y, this.tileCellSize);
+      if (this.markedLettersIndices.includes(i)) {
+        renderUtils.renderLetterHighlightAtPosition(
+          this.tiles[i].getX(),
+          this.tiles[i].getY(),
+          this.tileCellSize
+        );
       }
     }
   }
@@ -100,10 +95,37 @@ export class Letterbar {
     return this.width;
   }
 
+  setY(y: number) {
+    this.y = y;
+    for (const t of this.tiles) {
+      t.setY(y + this.height / 2);
+    }
+  }
+
+  setX(x: number) {
+    this.x = x;
+    for (let i = 0; i < this.tiles.length; i++) {
+      this.tiles[i].setX(this._getLetterX(i));
+    }
+  }
+
+  setWidth(width: number) {
+    this.width = width;
+    this.updateTileCellSize();
+
+    this.tiles.forEach((t, index) => {
+      t.setX(this._getLetterX(index));
+    });
+  }
+
   init() {
     if (window.letterPoolService) {
       window.letterPoolService.init();
-      this.letters = window.letterPoolService.drawLetters(7);
+      this.tiles = window.letterPoolService
+        .drawLetters(7)
+        .map((letter, index) =>
+          toTile(letter, this._getLetterX(index), this.y + this.height / 2)
+        );
     }
   }
 
@@ -112,9 +134,11 @@ export class Letterbar {
     const y = this.p5.mouseY;
     // Larger hit area for better touch support (1.2x the cell size)
     const hitAreaMultiplier = 1.2;
-    for (let i = 0; i < this.letters.length; i++) {
-      const letterX = this._getLetterX(i);
-      const letterY = this._getLetterY();
+    for (let i = 0; i < this.tiles.length; i++) {
+      const tile = this.tiles[i];
+      const letter = tile.getLetter();
+      const letterX = tile.getX();
+      const letterY = tile.getY();
 
       const hitSize = (this.tileCellSize * hitAreaMultiplier) / 2;
 
@@ -124,37 +148,52 @@ export class Letterbar {
         y > letterY - hitSize &&
         y < letterY + hitSize
       ) {
-        return this.letters[i];
+        return letter;
       }
     }
     return null;
   }
 
   redrawLettersFromPool() {
-    const lettersNeeded = 7 - this.letters.length;
+    const lettersNeeded = 7 - this.tiles.length;
     if (lettersNeeded > 0) {
       const newLetters = window.letterPoolService.drawLetters(lettersNeeded);
-      this.letters.push(...newLetters);
+      for (const letter of newLetters) {
+        this.tiles.push(
+          toTile(
+            letter,
+            this._getLetterX(this.tiles.length),
+            this.y + this.height / 2
+          )
+        );
+      }
     }
+    this.updateTilePositions();
   }
 
   removeLetter(letterObj: Letter) {
-    this.letters = this.letters.filter((l) => l !== letterObj);
-    this.lettersOnGrid.push(letterObj);
+    this.tiles = this.tiles.filter((tile) => tile.getLetter() !== letterObj);
+    this.updateTilePositions();
   }
 
   addLetter(letter: Letter) {
     if (letter.wildCard) {
       letter.letter = "*";
     }
-    this.letters.push(letter);
-    this.lettersOnGrid = this.lettersOnGrid.filter((l) => l !== letter);
+    this.tiles.push(
+      toTile(
+        letter,
+        this._getLetterX(this.tiles.length - 1),
+        this.y + this.height / 2
+      )
+    );
+    this.updateTilePositions();
   }
 
   shuffleLetters() {
-    for (let i = this.letters.length - 1; i > 0; i--) {
+    for (let i = this.tiles.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [this.letters[i], this.letters[j]] = [this.letters[j], this.letters[i]];
+      [this.tiles[i], this.tiles[j]] = [this.tiles[j], this.tiles[i]];
     }
   }
 
@@ -172,12 +211,24 @@ export class Letterbar {
       return;
     }
     const lettersToSwitch = this.markedLettersIndices.map(
-      (i) => this.letters[i]
+      (i) => this.tiles[i].getLetter()!
     );
     const newLetters = window.letterPoolService.switchLetters(lettersToSwitch);
-    this.letters = this.letters.filter((l) => !lettersToSwitch.includes(l));
-    this.letters.push(...newLetters);
+    this.tiles = this.tiles.filter(
+      (tile) => !lettersToSwitch.includes(tile.getLetter()!)
+    );
+    for (const letter of newLetters) {
+      this.tiles.push(
+        toTile(
+          letter,
+          this._getLetterX(this.tiles.length),
+          this.y + this.height / 2
+        )
+      );
+    }
     this.markedLettersIndices = [];
+
+    this.updateTilePositions();
   }
 
   hasMarkedLetters() {
@@ -186,7 +237,10 @@ export class Letterbar {
 
   save() {
     if (window.persistanceService) {
-      window.persistanceService.save("letterbarState", this.letters);
+      window.persistanceService.save(
+        "letterbarState",
+        this.tiles.map((tile) => tile.getLetter())
+      );
     }
     if (window.letterPoolService) {
       window.letterPoolService.save();
@@ -198,7 +252,9 @@ export class Letterbar {
       const savedLetters =
         window.persistanceService.load<Letter[]>("letterbarState");
       if (savedLetters) {
-        this.letters = savedLetters;
+        this.tiles = savedLetters.map((letter, index) =>
+          toTile(letter, this._getLetterX(index), this.y + this.height / 2)
+        );
       }
     }
     if (window.letterPoolService) {
@@ -227,5 +283,16 @@ export class Letterbar {
     );
 
     console.log(`Letterbar tile cell size updated to ${this.tileCellSize}`);
+
+    for (const t of this.tiles) {
+      t.setSize(this.tileCellSize);
+    }
+  }
+
+  updateTilePositions() {
+    for (let i = 0; i < this.tiles.length; i++) {
+      this.tiles[i].setX(this._getLetterX(i));
+      this.tiles[i].setY(this.y + this.height / 2);
+    }
   }
 }

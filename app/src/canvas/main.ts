@@ -67,6 +67,7 @@ const s = (p5: P5WithTouch) => {
     EXPERIMENTAL: {
       zoomEnabled: true,
     },
+    barLetterTextSize: 32,
   };
 
   const DOM: DomElements = {
@@ -543,10 +544,12 @@ const s = (p5: P5WithTouch) => {
 
   // Handle window resize
   p5.windowResized = function () {
+    console.log("[main] Window resized, recalculating sizes...");
     calculateDynamicSizes();
     grid.cellSize = cellSize;
-    bar.y = grid.getHeight() + margin;
-    bar.width = grid.getWidth();
+
+    bar.setY(grid.getHeight() + margin);
+    bar.setWidth(grid.getWidth());
     bar.updateTileCellSize();
 
     p5.resizeCanvas(
