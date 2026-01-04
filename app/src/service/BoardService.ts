@@ -1,26 +1,17 @@
+import type { Letter } from "../types/Letter";
 import { gridConfigService } from "./GridConfigService";
 import { persistanceService } from "./PersistanceService";
 
-interface PlacedLetter {
-  id: number;
-  letter: string;
-  row: number;
-  col: number;
-  value: number;
-  isLive: boolean;
-  wildCard?: boolean;
-}
-
-const getLetterValueMultiplier = (letter: PlacedLetter): number => {
+const getLetterValueMultiplier = (letter: Letter): number => {
   if (letter.wildCard) return 1;
   if (!letter.isLive) return 1;
-  return gridConfigService.getLetterMultiplierAt(letter.col, letter.row);
+  return gridConfigService.getLetterMultiplierAt(letter.col!, letter.row!);
 };
 
 export class Word {
-  letters: PlacedLetter[];
+  letters: Letter[];
 
-  constructor(letters: PlacedLetter[]) {
+  constructor(letters: Letter[]) {
     this.letters = letters;
   }
 
@@ -29,8 +20,8 @@ export class Word {
       .filter((l) => l.isLive)
       .reduce((acc, letter) => {
         const wordMultiplier = gridConfigService.getWordMultiplierAt(
-          letter.col,
-          letter.row
+          letter.col!,
+          letter.row!
         );
         return acc * wordMultiplier;
       }, 1);
@@ -55,9 +46,9 @@ export class Word {
 }
 
 export class BoardService {
-  board: (PlacedLetter | null)[][];
-  letters: PlacedLetter[];
-  liveLetters: PlacedLetter[];
+  board: (Letter | null)[][];
+  letters: Letter[];
+  liveLetters: Letter[];
   constructor() {
     this.board = [];
     this.letters = [];
@@ -83,8 +74,8 @@ export class BoardService {
     // Special case: if there's only 1 live letter, determine direction by checking for adjacent letters
     if (this.liveLetters.length === 1) {
       const letter = this.liveLetters[0];
-      const row = letter.row;
-      const col = letter.col;
+      const row = letter.row!;
+      const col = letter.col!;
 
       // Check for horizontal adjacent letters (left or right)
       const hasHorizontalAdjacent =
@@ -114,7 +105,7 @@ export class BoardService {
           maxCol++;
         }
 
-        const wordLetters: PlacedLetter[] = [];
+        const wordLetters: Letter[] = [];
         for (let c = minCol; c <= maxCol; c++) {
           const l = this.board[row][c];
           if (l) wordLetters.push(l);
@@ -132,7 +123,7 @@ export class BoardService {
           maxRow++;
         }
 
-        const wordLetters: PlacedLetter[] = [];
+        const wordLetters: Letter[] = [];
         for (let r = minRow; r <= maxRow; r++) {
           const l = this.board[r][col];
           if (l) wordLetters.push(l);
@@ -149,14 +140,14 @@ export class BoardService {
       (l) => l.row === this.liveLetters[0].row
     );
 
-    let wordLetters: PlacedLetter[] = [];
+    let wordLetters: Letter[] = [];
 
     if (allSameRow) {
       // Horizontal word
-      const row = this.liveLetters[0].row;
-      const sorted = [...this.liveLetters].sort((a, b) => a.col - b.col);
-      let minCol = sorted[0].col;
-      let maxCol = sorted[sorted.length - 1].col;
+      const row = this.liveLetters[0].row!;
+      const sorted = [...this.liveLetters].sort((a, b) => a.col! - b.col!);
+      let minCol = sorted[0].col!;
+      let maxCol = sorted[sorted.length - 1].col!;
 
       // Expand left to find the start of the word
       while (minCol > 0 && this.board[row][minCol - 1] !== null) {
@@ -177,10 +168,10 @@ export class BoardService {
       }
     } else {
       // Vertical word
-      const col = this.liveLetters[0].col;
-      const sorted = [...this.liveLetters].sort((a, b) => a.row - b.row);
-      let minRow = sorted[0].row;
-      let maxRow = sorted[sorted.length - 1].row;
+      const col = this.liveLetters[0].col!;
+      const sorted = [...this.liveLetters].sort((a, b) => a.row! - b.row!);
+      let minRow = sorted[0].row!;
+      let maxRow = sorted[sorted.length - 1].row!;
 
       // Expand up to find the start of the word
       while (minRow > 0 && this.board[minRow - 1][col] !== null) {
@@ -225,10 +216,10 @@ export class BoardService {
 
     if (allSameRow) {
       // Sort by column position
-      const sorted = [...this.liveLetters].sort((a, b) => a.col - b.col);
-      const row = sorted[0].row;
-      const minCol = sorted[0].col;
-      const maxCol = sorted[sorted.length - 1].col;
+      const sorted = [...this.liveLetters].sort((a, b) => a.col! - b.col!);
+      const row = sorted[0].row!;
+      const minCol = sorted[0].col!;
+      const maxCol = sorted[sorted.length - 1].col!;
 
       // Check that all positions between min and max are occupied
       for (let col = minCol; col <= maxCol; col++) {
@@ -238,10 +229,10 @@ export class BoardService {
       }
     } else {
       // All same column - sort by row position
-      const sorted = [...this.liveLetters].sort((a, b) => a.row - b.row);
-      const col = sorted[0].col;
-      const minRow = sorted[0].row;
-      const maxRow = sorted[sorted.length - 1].row;
+      const sorted = [...this.liveLetters].sort((a, b) => a.row! - b.row!);
+      const col = sorted[0].col!;
+      const minRow = sorted[0].row!;
+      const maxRow = sorted[sorted.length - 1].row!;
 
       // Check that all positions between min and max are occupied
       for (let row = minRow; row <= maxRow; row++) {
@@ -262,10 +253,10 @@ export class BoardService {
       for (const liveLetter of this.liveLetters) {
         // Check all 4 adjacent cells (up, down, left, right)
         const adjacentPositions = [
-          { row: liveLetter.row - 1, col: liveLetter.col }, // Up
-          { row: liveLetter.row + 1, col: liveLetter.col }, // Down
-          { row: liveLetter.row, col: liveLetter.col - 1 }, // Left
-          { row: liveLetter.row, col: liveLetter.col + 1 }, // Right
+          { row: liveLetter.row! - 1, col: liveLetter.col! }, // Up
+          { row: liveLetter.row! + 1, col: liveLetter.col! }, // Down
+          { row: liveLetter.row!, col: liveLetter.col! - 1 }, // Left
+          { row: liveLetter.row!, col: liveLetter.col! + 1 }, // Right
         ];
 
         for (const pos of adjacentPositions) {
@@ -291,9 +282,9 @@ export class BoardService {
     return true;
   }
 
-  placeLetter(letter: PlacedLetter): boolean {
-    if (this.board[letter.row][letter.col] === null) {
-      this.board[letter.row][letter.col] = letter;
+  placeLetter(letter: Letter): boolean {
+    if (this.board[letter.row!][letter.col!] === null) {
+      this.board[letter.row!][letter.col!] = letter;
       this.letters.push(letter);
       this.liveLetters.push(letter);
       return true;
@@ -301,11 +292,11 @@ export class BoardService {
     return false;
   }
 
-  getBoardState(): (PlacedLetter | null)[][] {
+  getBoardState(): (Letter | null)[][] {
     return this.board;
   }
 
-  getPlacedLetters(): PlacedLetter[] {
+  getPlacedLetters(): Letter[] {
     return this.letters;
   }
 
@@ -320,12 +311,12 @@ export class BoardService {
   }
 
   load() {
-    const savedLetters = persistanceService.load<PlacedLetter[]>("boardState");
+    const savedLetters = persistanceService.load<Letter[]>("boardState");
     if (savedLetters) {
       this.letters = savedLetters;
       this.initializeBoard();
       this.letters.forEach((letter) => {
-        this.board[letter.row][letter.col] = letter;
+        this.board[letter.row!][letter.col!] = letter;
       });
     }
   }
@@ -343,7 +334,7 @@ export class BoardService {
     }
   }
 
-  updateLetterAt(row: number, col: number, newLetter: PlacedLetter) {
+  updateLetterAt(row: number, col: number, newLetter: Letter) {
     const letter = this.board[row][col];
     if (letter) {
       letter.letter = newLetter.letter;
@@ -359,7 +350,7 @@ export class BoardService {
 
     // Scan horizontally (left to right)
     for (let row = 0; row < 15; row++) {
-      let currentWord: PlacedLetter[] = [];
+      let currentWord: Letter[] = [];
 
       for (let col = 0; col < 15; col++) {
         const letter = this.board[row][col];
@@ -383,7 +374,7 @@ export class BoardService {
 
     // Scan vertically (top to bottom)
     for (let col = 0; col < 15; col++) {
-      let currentWord: PlacedLetter[] = [];
+      let currentWord: Letter[] = [];
 
       for (let row = 0; row < 15; row++) {
         const letter = this.board[row][col];

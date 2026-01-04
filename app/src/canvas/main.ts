@@ -1,9 +1,13 @@
 import { Grid } from "./grid.js";
-import { Letterbar } from "./letterbar.js";
+import { Letterbar } from "./letterbar.ts";
 import { renderUtils } from "./renderUtils.js";
+//@ts-ignore
 import { styleUtils } from "./styleUtils.js";
+//@ts-ignore
 import { WildcardSelector } from "./wildcardSelector.js";
+//@ts-ignore
 import { showMessage } from "./messageBox.js";
+//@ts-ignore
 import { translate, translateFormatted } from "./translationUtils.js";
 import { ZoomController } from "./zoomController.js";
 import {
@@ -17,12 +21,37 @@ import {
 
 import P5 from "p5";
 
-const s = (p5) => {
-  let grid;
-  let bar;
-  let wildcardSelector;
-  let zoomController;
-  let activeTouches = []; // Track touch points for pinch zoom
+// Extend P5 type to include touch event handlers
+interface P5WithTouch extends P5 {
+  touchStarted?: ((event?: any) => boolean | void) | any;
+  touchEnded?: ((event?: any) => boolean | void) | any;
+  touchMoved?: ((event?: any) => boolean | void) | any;
+}
+
+interface TouchPoint {
+  x: number;
+  y: number;
+}
+
+interface DomElements {
+  finishMoveButton: HTMLButtonElement | null;
+  resetMoveButton: HTMLButtonElement | null;
+  shuffleButton: HTMLButtonElement | null;
+  switchButton: HTMLButtonElement | null;
+  scoreLabel: HTMLSpanElement | null;
+  lastWordLabel?: HTMLSpanElement | null;
+  EXPERIMENTAL: {
+    resetZoomButton: HTMLButtonElement | null;
+  };
+  startButton?: HTMLButtonElement | null;
+}
+
+const s = (p5: P5WithTouch) => {
+  let grid: Grid;
+  let bar: Letterbar;
+  let wildcardSelector: WildcardSelector;
+  let zoomController: ZoomController;
+  let activeTouches: TouchPoint[] = []; // Track touch points for pinch zoom
   const margin = 20;
   let cellSize = 50;
   let gridTextSize = 16;
@@ -31,22 +60,20 @@ const s = (p5) => {
   let coreServicesInitialized = false;
   let gameStarted = false;
 
-  window.gameContext = {};
-  window.gameContext.draggedLetter = false;
-  // Size of each cell in pixels
-  window.gameContext.cellSize = cellSize;
-  // Text size for special tiles displayed on the grid
-  window.gameContext.gridTextSize = gridTextSize;
-  // Text size for letters displayed on letter tiles
-  window.gameContext.letterTileTextSize = letterTileTextSize;
-  // Text size for score displayed on letter tiles
-  window.gameContext.letterTileScoreTextSize = letterTileScoreTextSize;
+  window.gameContext = {
+    draggedLetter: null,
+    dragSource: undefined,
+    switchLetters: false,
+    gridTextSize: gridTextSize,
+    letterTileTextSize: letterTileTextSize,
+    letterTileScoreTextSize: letterTileScoreTextSize,
+    cellSize: cellSize,
+    EXPERIMENTAL: {
+      zoomEnabled: true,
+    },
+  };
 
-  window.gameContext.EXPERIMENTAL = {};
-  // Zoom is now always enabled
-  window.gameContext.EXPERIMENTAL.zoomEnabled = false;
-
-  const DOM = {
+  const DOM: DomElements = {
     finishMoveButton: null,
     resetMoveButton: null,
     shuffleButton: null,
@@ -108,7 +135,7 @@ const s = (p5) => {
 
         const { score, word } = grid.finalizeMove();
 
-        updateScoreBar(word, score);
+        updateScoreBar(word!, score);
 
         bar.redrawLettersFromPool();
         bar.save();
@@ -156,13 +183,13 @@ const s = (p5) => {
     DOM.scoreLabel = document.createElement("span");
     DOM.scoreLabel.id = "score-label";
     DOM.scoreLabel.innerText = translateFormatted("score_label", 0);
-    document.getElementById("game-stats").appendChild(DOM.scoreLabel);
+    document.getElementById("game-stats")?.appendChild(DOM.scoreLabel);
 
     // Last played word label (optional)
     DOM.lastWordLabel = document.createElement("span");
     DOM.lastWordLabel.id = "last-word-label";
     DOM.lastWordLabel.innerText = "";
-    document.getElementById("game-stats").appendChild(DOM.lastWordLabel);
+    document.getElementById("game-stats")?.appendChild(DOM.lastWordLabel);
 
     // ZOOM CONTROLS - Zoom is now always enabled
     // Reset zoom button to return to default view
@@ -194,7 +221,7 @@ const s = (p5) => {
 
     document
       .getElementById("actions")
-      .appendChild(DOM.EXPERIMENTAL.resetZoomButton);
+      ?.appendChild(DOM.EXPERIMENTAL.resetZoomButton);
 
     // Create a start button to initiate the game
     DOM.startButton = document.createElement("button");
@@ -216,12 +243,12 @@ const s = (p5) => {
       startGameHandler();
     };
 
-    document.getElementById("game-controls").appendChild(DOM.startButton);
+    document.getElementById("game-controls")?.appendChild(DOM.startButton);
 
     // Set the width of game-controls to match the canvas
     document.getElementById(
       "game-controls"
-    ).style.width = `${grid.getWidth()}px`;
+    )!.style.width = `${grid.getWidth()}px`;
   };
 
   // Map action keys to Lucide icons for compact mobile display
@@ -232,7 +259,12 @@ const s = (p5) => {
     switch_letters: RefreshCw, // Switch letters (refresh)
   };
 
-  const createActionButton = (text_key, id, eventHandler, disabled = true) => {
+  const createActionButton = (
+    text_key: keyof typeof ACTION_ICONS,
+    id: string,
+    eventHandler: () => void,
+    disabled = true
+  ) => {
     const button = document.createElement("button");
     button.id = id;
     button.disabled = disabled;
@@ -264,11 +296,15 @@ const s = (p5) => {
       e.preventDefault();
       eventHandler();
     };
-    document.getElementById("actions").appendChild(button);
+    document.getElementById("actions")?.appendChild(button);
     return button;
   };
 
-  const updateScoreBar = (word, score) => {
+  const updateScoreBar = (word: string, score: number) => {
+    if (!DOM.scoreLabel || !DOM.lastWordLabel) {
+      return;
+    }
+
     DOM.scoreLabel.innerText = translateFormatted(
       "score_label",
       window.gameService.getScore()
@@ -284,13 +320,7 @@ const s = (p5) => {
     calculateDynamicSizes(); // Calculate responsive cell size
 
     grid = new Grid(p5, 15, 15, cellSize);
-    bar = new Letterbar(
-      p5,
-      0,
-      grid.getHeight() + margin,
-      grid.getWidth(),
-      cellSize
-    );
+    bar = new Letterbar(p5, 0, grid.getHeight() + margin, grid.getWidth());
 
     p5.createCanvas(
       grid.getWidth(),
@@ -307,6 +337,45 @@ const s = (p5) => {
     setupActionButtons();
 
     p5.textAlign(p5.CENTER, p5.CENTER);
+
+    showMessage("P5 setup complete!", "info", 2000);
+
+    // Manually register touch events on the canvas element
+    // This is needed because p5.js npm version may not auto-register touch events
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      showMessage("Registering touch events on canvas", "info", 2000);
+
+      canvas.addEventListener(
+        "touchstart",
+        () => {
+          if (p5.touchStarted && typeof p5.touchStarted === "function") {
+            (p5.touchStarted as any).call(p5);
+          }
+        },
+        { passive: false }
+      );
+
+      canvas.addEventListener(
+        "touchend",
+        () => {
+          if (p5.touchEnded && typeof p5.touchEnded === "function") {
+            (p5.touchEnded as any).call(p5);
+          }
+        },
+        { passive: false }
+      );
+
+      canvas.addEventListener(
+        "touchmove",
+        () => {
+          if (p5.touchMoved && typeof p5.touchMoved === "function") {
+            (p5.touchMoved as any).call(p5);
+          }
+        },
+        { passive: false }
+      );
+    }
 
     if (window.persistanceService) {
       const gameStartedSaved = window.persistanceService.load("gameStarted");
@@ -333,7 +402,9 @@ const s = (p5) => {
     window.persistanceService.save("gameStarted", true);
 
     gameStarted = true;
-    DOM.startButton.innerText = translate("abort_game");
+    if (DOM.startButton) {
+      DOM.startButton.innerText = translate("abort_game");
+    }
   };
 
   const loadSavedGame = () => {
@@ -359,11 +430,13 @@ const s = (p5) => {
 
     updateScoreBar(
       window.gameService ? window.gameService.getLastWord() : "",
-      "?"
+      0
     );
 
     gameStarted = true;
-    DOM.startButton.innerText = translate("abort_game");
+    if (DOM.startButton) {
+      DOM.startButton.innerText = translate("abort_game");
+    }
   };
 
   p5.draw = function () {
@@ -395,7 +468,16 @@ const s = (p5) => {
     bar.render();
 
     if (window.gameContext.draggedLetter) {
-      renderUtils.renderDraggedTile(window.gameContext.draggedLetter, cellSize);
+      // TODO: Fix this mess
+      renderUtils.renderDraggedTile(
+        {
+          ...window.gameContext.draggedLetter,
+          col: window.gameContext.draggedLetter.col!,
+          row: window.gameContext.draggedLetter.row!,
+          isLive: true,
+        },
+        cellSize
+      );
     }
 
     if (window.gameContext.switchLetters) {
@@ -411,7 +493,7 @@ const s = (p5) => {
     handleDom();
   };
 
-  const handleCursorStyle = (p5) => {
+  const handleCursorStyle = (p5: P5) => {
     const mouseOverBarLetter = bar.getLetterAtMousePosition() !== null;
     const gridLetter = grid.getMouseOverLetter();
     const mouseOverLiveGridLetter = gridLetter && gridLetter.isLive;
@@ -430,8 +512,8 @@ const s = (p5) => {
     wildcardSelector.render();
   };
 
-  const setIfValueChanged = (obj, key, newValue) => {
-    if (obj[key] !== newValue) {
+  const setIfValueChanged = (obj: any, key: string, newValue: any) => {
+    if (obj && obj[key] !== newValue) {
       obj[key] = newValue;
     }
   };
@@ -449,20 +531,21 @@ const s = (p5) => {
     setIfValueChanged(DOM.switchButton, "disabled", hasPlacedLetters);
 
     // Update switch button text when toggling between switch and confirm modes
-    const switchTextSpan = DOM.switchButton.querySelector(".button-text");
+    const switchTextSpan: HTMLElement | null =
+      DOM.switchButton!.querySelector(".button-text");
     if (window.gameContext.switchLetters) {
       const confirmText = translate("confirm_switch");
       if (switchTextSpan && switchTextSpan.innerText !== confirmText) {
         switchTextSpan.innerText = confirmText;
-        DOM.switchButton.setAttribute("aria-label", confirmText);
-        DOM.switchButton.setAttribute("title", confirmText);
+        DOM.switchButton?.setAttribute("aria-label", confirmText);
+        DOM.switchButton?.setAttribute("title", confirmText);
       }
     } else {
       const switchText = translate("switch_letters");
       if (switchTextSpan && switchTextSpan.innerText !== switchText) {
         switchTextSpan.innerText = switchText;
-        DOM.switchButton.setAttribute("aria-label", switchText);
-        DOM.switchButton.setAttribute("title", switchText);
+        DOM.switchButton?.setAttribute("aria-label", switchText);
+        DOM.switchButton?.setAttribute("title", switchText);
       }
     }
   };
@@ -471,7 +554,6 @@ const s = (p5) => {
   p5.windowResized = function () {
     calculateDynamicSizes();
     grid.cellSize = cellSize;
-    bar.cellSize = cellSize;
     bar.y = grid.getHeight() + margin;
     bar.width = grid.getWidth();
     bar.updateTileCellSize();
@@ -482,10 +564,9 @@ const s = (p5) => {
     );
 
     // Update game-controls width to match canvas
-    if (document.getElementById("game-controls")) {
-      document.getElementById(
-        "game-controls"
-      ).style.width = `${grid.getWidth()}px`;
+    const gameControlsElement = document.getElementById("game-controls");
+    if (gameControlsElement) {
+      gameControlsElement.style.width = `${grid.getWidth()}px`;
     }
   };
 
@@ -514,13 +595,13 @@ const s = (p5) => {
   const handleSelectedWildcardLetter = () => {
     const letter = wildcardSelector.getSelectedLetter();
     if (letter) {
-      window.gameContext.wildcard.letter.letter = letter;
+      window.gameContext.wildcard!.letter.letter = letter;
       window.boardService.updateLetterAt(
-        window.gameContext.wildcard.letter.row,
-        window.gameContext.wildcard.letter.col,
-        window.gameContext.wildcard.letter
+        window.gameContext.wildcard!.letter.row!,
+        window.gameContext.wildcard!.letter.col!,
+        window.gameContext.wildcard!.letter
       );
-      window.gameContext.wildcard = null;
+      window.gameContext.wildcard = undefined;
     }
   };
 
@@ -559,19 +640,23 @@ const s = (p5) => {
       }
 
       window.gameContext.draggedLetter = null;
-      window.gameContext.dragSource = null;
+      window.gameContext.dragSource = undefined;
     }
   };
 
   const handleEndDragFromBar = () => {
     const letter = window.gameContext.draggedLetter;
-    if (grid.canDropLetter() && grid.dropLetter(letter)) {
+    if (letter && grid.canDropLetter() && grid.dropLetter(letter)) {
       bar.removeLetter(letter);
     }
   };
 
   const handleEndDragFromGrid = () => {
     const letter = window.gameContext.draggedLetter;
+    if (!letter) {
+      return;
+    }
+
     if (bar.mouseIsOver()) {
       bar.addLetter(letter);
       grid.removeLetter(letter);
@@ -583,26 +668,33 @@ const s = (p5) => {
 
   // Mouse wheel zoom
   p5.mouseWheel = function (event) {
-    if (grid.mouseIsOver() && window.gameContext.EXPERIMENTAL.zoomEnabled) {
-      zoomController.handleZoom(event.delta, mouseX, mouseY);
+    if (
+      grid.mouseIsOver() &&
+      window.gameContext.EXPERIMENTAL.zoomEnabled &&
+      event &&
+      event.deltaY
+    ) {
+      zoomController.handleZoom(event.deltaY, p5.mouseX, p5.mouseY);
       return false;
     }
   };
 
-  p5.touchStarted = function () {
-    activeTouches = [...window.touches];
+  p5.touchStarted = function (this: any) {
+    activeTouches = [...this.touches] as TouchPoint[];
     if (
       activeTouches.length === 2 &&
       window.gameContext.EXPERIMENTAL.zoomEnabled
     ) {
-      // Start pinch zoom - prevent default to avoid Safari interference
       return false;
     }
-    window.mousePressed();
+    // Manually trigger mouse pressed logic for single touch
+    if (p5.mousePressed && typeof p5.mousePressed === "function") {
+      p5.mousePressed.call(this);
+    }
     return false;
-  };
+  } as any;
 
-  p5.touchEnded = function () {
+  p5.touchEnded = function (this: any) {
     if (
       activeTouches.length === 2 &&
       window.gameContext.EXPERIMENTAL.zoomEnabled
@@ -611,27 +703,30 @@ const s = (p5) => {
       return false;
     }
     activeTouches = [];
-    p5.mouseReleased();
+    // Manually trigger mouse released logic
+    if (p5.mouseReleased && typeof p5.mouseReleased === "function") {
+      p5.mouseReleased.call(this);
+    }
     return false;
-  };
+  } as any;
 
-  p5.touchMoved = function () {
+  p5.touchMoved = function (this: any) {
     if (
       activeTouches.length === 2 &&
       window.gameContext.EXPERIMENTAL.zoomEnabled
     ) {
-      const newTouches = [...window.touches];
+      const newTouches = [...this.touches] as TouchPoint[];
       if (newTouches.length !== 2) {
         return false;
       }
 
-      const oldDist = dist(
+      const oldDist = this.dist(
         activeTouches[0].x,
         activeTouches[0].y,
         activeTouches[1].x,
         activeTouches[1].y
       );
-      const newDist = dist(
+      const newDist = this.dist(
         newTouches[0].x,
         newTouches[0].y,
         newTouches[1].x,
@@ -639,6 +734,7 @@ const s = (p5) => {
       );
 
       const zoomDelta = (newDist - oldDist) * 2;
+
       const centerX = (newTouches[0].x + newTouches[1].x) / 2;
       const centerY = (newTouches[0].y + newTouches[1].y) / 2;
 
@@ -649,9 +745,9 @@ const s = (p5) => {
     if (window.gameContext.draggedLetter) {
       return false;
     }
-  };
+  } as any;
 };
 
 let myp5 = new P5(s);
-window.p5 = myp5;
+window.p5 = myp5 as any;
 console.log("[main] p5 instance created");

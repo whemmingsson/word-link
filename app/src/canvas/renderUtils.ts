@@ -1,3 +1,4 @@
+import type { Letter } from "../types/Letter";
 import { p } from "../utils/p5Utils";
 //@ts-ignore: Ignore missing p5 module error for now
 import { styleUtils } from "./styleUtils";
@@ -165,13 +166,7 @@ const renderDraggedTile = (
 };
 
 const renderLetterTileAtPosition = (
-  letter: {
-    col: number;
-    row: number;
-    isLive: boolean;
-    letter: string;
-    value?: number;
-  },
+  letter: Letter,
   x: number,
   y: number,
   cellSize: number

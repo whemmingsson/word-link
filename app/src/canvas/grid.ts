@@ -1,4 +1,4 @@
-import type { PlacedLetter } from "../types/PlacedLetter.js";
+import type { Letter } from "../types/Letter.js";
 // @ts-ignore: Ignore missing module error for renderUtils for now
 import { renderUtils } from "./renderUtils.js";
 import type P5 from "p5";
@@ -7,7 +7,7 @@ export class Grid {
   rows: number;
   cols: number;
   cellSize: number;
-  liveLetters: PlacedLetter[];
+  liveLetters: Letter[];
   constructor(p5: P5, rows: number, cols: number, cellSize: number) {
     this.p5 = p5;
     this.rows = rows;
@@ -148,14 +148,14 @@ export class Grid {
     );
   }
 
-  showWildcardSelector(placedLetter: PlacedLetter) {
+  showWildcardSelector(placedLetter: Letter) {
     window.gameContext.wildcard = {
       letter: placedLetter,
       selecting: true,
     };
   }
 
-  dropLetter(letter: PlacedLetter) {
+  dropLetter(letter: Letter) {
     // Use transformed coordinates to place letter at correct grid position (accounts for zoom/pan)
     const coords = this._getTransformedMouseCoords();
     const col = this._getCol(coords.x);
@@ -193,11 +193,11 @@ export class Grid {
     this.liveLetters = [];
   }
 
-  removeLetter(placedLetter: PlacedLetter) {
+  removeLetter(placedLetter: Letter) {
     this.liveLetters = this.liveLetters.filter((l) => l !== placedLetter);
 
     if (window.boardService && placedLetter) {
-      window.boardService.removeLetter(placedLetter.row, placedLetter.col);
+      window.boardService.removeLetter(placedLetter.row!, placedLetter.col!);
     }
   }
 
@@ -225,7 +225,7 @@ export class Grid {
     if (window.boardService) {
       for (let i = 0; i < this.liveLetters.length; i++) {
         const placedLetter = this.liveLetters[i];
-        window.boardService.removeLetter(placedLetter.row, placedLetter.col);
+        window.boardService.removeLetter(placedLetter.row!, placedLetter.col!);
       }
     }
     this.liveLetters = [];

@@ -1,8 +1,23 @@
+import type { Letter } from "../types/Letter";
 import { renderUtils } from "./renderUtils";
+
+//@ts-ignore
 import { styleUtils } from "./styleUtils";
+import type P5 from "p5";
 
 export class Letterbar {
-  constructor(p5, x, y, width) {
+  p5: P5;
+  x: number;
+  y: number;
+  width: number;
+  letters: Letter[];
+  lettersOnGrid: Letter[];
+  padding: number;
+  height: number;
+  markedLettersIndices: number[];
+  tileCellSize: number;
+  spacingMultiplier: number;
+  constructor(p5: P5, x: number, y: number, width: number) {
     this.p5 = p5;
     this.x = x;
     this.y = y;
@@ -17,7 +32,7 @@ export class Letterbar {
     this.updateTileCellSize();
   }
 
-  _getLetterX(index) {
+  _getLetterX(index: number) {
     return (
       this.x +
       this.padding * this.spacingMultiplier +
@@ -129,12 +144,12 @@ export class Letterbar {
     }
   }
 
-  removeLetter(letterObj) {
+  removeLetter(letterObj: Letter) {
     this.letters = this.letters.filter((l) => l !== letterObj);
-    this.lettersOnGrid.push(letterObj.letter);
+    this.lettersOnGrid.push(letterObj);
   }
 
-  addLetter(letter) {
+  addLetter(letter: Letter) {
     if (letter.wildCard) {
       letter.letter = "*";
     }
@@ -149,7 +164,7 @@ export class Letterbar {
     }
   }
 
-  toggleMarkLetterAtIndex(index) {
+  toggleMarkLetterAtIndex(index: number) {
     const markIndex = this.markedLettersIndices.indexOf(index);
     if (markIndex === -1) {
       this.markedLettersIndices.push(index);
@@ -186,7 +201,8 @@ export class Letterbar {
 
   load() {
     if (window.persistanceService) {
-      const savedLetters = window.persistanceService.load("letterbarState");
+      const savedLetters =
+        window.persistanceService.load<Letter[]>("letterbarState");
       if (savedLetters) {
         this.letters = savedLetters;
       }

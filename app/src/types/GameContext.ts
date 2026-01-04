@@ -1,8 +1,8 @@
 import type { ZoomController } from "../canvas/zoomController.ts";
-import type { PlacedLetter } from "./PlacedLetter";
+import type { Letter } from "./Letter.ts";
 
 export interface GameContext {
-  draggedLetter: PlacedLetter | null;
+  draggedLetter: Letter | null;
   dragSource?: "grid" | "bar";
   cellSize: number;
   gridTextSize: number;
@@ -10,7 +10,7 @@ export interface GameContext {
   letterTileScoreTextSize: number;
   switchLetters?: boolean;
   wildcard?: {
-    letter: PlacedLetter;
+    letter: Letter;
     selecting: boolean;
   };
   EXPERIMENTAL: {
