@@ -1,6 +1,17 @@
-import { translate } from "./translationUtils.js";
+import { translate } from "../utils/translationUtils.js";
+import P5 from "p5";
 export class WildcardSelector {
-  constructor(p5) {
+  p5: any;
+  letters: string[];
+  numberOfColumns: number;
+  cellSize: number;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  startX: any;
+  startY: any;
+  constructor(p5: P5) {
     this.p5 = p5;
     this.letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".split("");
     this.numberOfColumns = 7;
@@ -13,7 +24,7 @@ export class WildcardSelector {
     this.startY = this.y + 80;
   }
 
-  _mouseIsOver(x, y) {
+  _mouseIsOver(x: number, y: number) {
     return (
       this.p5.mouseX > x &&
       this.p5.mouseX < x + this.cellSize &&

@@ -1,4 +1,8 @@
-export const showMessage = (text, type = "error", duration = 2000) => {
+export const showMessage = (
+  text: string,
+  type: "error" | "info" = "error",
+  duration = 2000
+) => {
   const messageDiv = document.createElement("div");
   messageDiv.textContent = text;
   messageDiv.style.cssText = `

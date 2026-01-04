@@ -97,12 +97,6 @@ export class TranslationService {
   }
 
   translateFormatted(key: string, ...args: string[]): string {
-    console.log(
-      "[TranslationService] Translating key:",
-      key,
-      "with args:",
-      args
-    );
     if (!this._hasEntry(key) || !this._getEntry(key)[this.language]) {
       return `Missing translation for key ${key} for language ${this.language}`;
     }

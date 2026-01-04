@@ -1,5 +1,5 @@
 import type { Letter } from "../types/Letter";
-import { p } from "../utils/p5Utils";
+import { p } from "./p5Utils";
 //@ts-ignore: Ignore missing p5 module error for now
 import { styleUtils } from "./styleUtils";
 
@@ -57,7 +57,7 @@ const renderLetterTile = (
 
   // Draw letter
   const letter = letterObj.letter;
-  renderText(letter, x, y, window.gameContext.letterTileTextSize);
+  renderText(letter, x, y, undefined, window.gameContext.letterTileTextSize);
 
   // Draw value in top right corner
   if (letterObj.value) {
@@ -118,18 +118,9 @@ const renderShadedCellIfTileIsDragged = (
   }
 };
 
-const renderTileWithLetter = (
-  letter: {
-    col: number;
-    row: number;
-    isLive: boolean;
-    letter: string;
-    value?: number;
-  },
-  cellSize: number
-) => {
-  const x = letter.col * cellSize + cellSize / 2;
-  const y = letter.row * cellSize + cellSize / 2;
+const renderTileWithLetter = (letter: Letter, cellSize: number) => {
+  const x = letter.col! * cellSize + cellSize / 2;
+  const y = letter.row! * cellSize + cellSize / 2;
 
   renderLetterTile(
     letter,
@@ -188,7 +179,9 @@ const renderBoardTileAtPosition = (
   cellSize: number
 ) => {
   const tileConfig =
-    styleUtils.grid.specialTiles[tile] || styleUtils.grid.specialTiles[0];
+    styleUtils.grid.specialTiles[
+      tile as keyof typeof styleUtils.grid.specialTiles
+    ] || styleUtils.grid.specialTiles[0];
 
   if (tile === 0) {
     p().stroke(0);

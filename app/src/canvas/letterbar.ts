@@ -1,8 +1,6 @@
 import type { Letter } from "../types/Letter";
-import { renderUtils } from "./renderUtils";
-
-//@ts-ignore
-import { styleUtils } from "./styleUtils";
+import { renderUtils } from "../utils/renderUtils";
+import { styleUtils } from "../utils/styleUtils";
 import type P5 from "p5";
 
 export class Letterbar {
@@ -42,7 +40,6 @@ export class Letterbar {
   }
 
   _getLetterY() {
-    // Center letters vertically in the bar
     return this.y + this.height / 2;
   }
 
@@ -80,11 +77,7 @@ export class Letterbar {
         window.gameContext.switchLetters &&
         this.markedLettersIndices.includes(i)
       ) {
-        renderUtils.renderLetterHighlightAtPosition(
-          x,
-          y,
-          window.gameContext.cellSize
-        );
+        renderUtils.renderLetterHighlightAtPosition(x, y, this.tileCellSize);
       }
     }
   }
@@ -122,7 +115,7 @@ export class Letterbar {
       const letterX = this._getLetterX(i);
       const letterY = this._getLetterY();
 
-      const hitSize = (window.gameContext.cellSize * hitAreaMultiplier) / 2;
+      const hitSize = (this.tileCellSize * hitAreaMultiplier) / 2;
 
       if (
         x > letterX - hitSize &&

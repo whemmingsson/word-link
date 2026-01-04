@@ -1,15 +1,11 @@
-import { Grid } from "./grid.js";
-import { Letterbar } from "./letterbar.ts";
-import { renderUtils } from "./renderUtils.js";
-//@ts-ignore
-import { styleUtils } from "./styleUtils.js";
-//@ts-ignore
-import { WildcardSelector } from "./wildcardSelector.js";
-//@ts-ignore
-import { showMessage } from "./messageBox.js";
-//@ts-ignore
-import { translate, translateFormatted } from "./translationUtils.js";
-import { ZoomController } from "./zoomController.js";
+import { Grid } from "./grid";
+import { Letterbar } from "./letterbar";
+import { renderUtils } from "../utils/renderUtils";
+import { styleUtils } from "../utils/styleUtils";
+import { WildcardSelector } from "./wildcardSelector";
+import { showMessage } from "./messageBox";
+import { translate, translateFormatted } from "../utils/translationUtils";
+import { ZoomController } from "./zoomController";
 import {
   createElement,
   Check,
@@ -98,7 +94,7 @@ const s = (p5: P5WithTouch) => {
     window.gameContext.cellSize = cellSize;
     gridTextSize = Math.floor(cellSize * 0.4);
     window.gameContext.gridTextSize = gridTextSize;
-    letterTileTextSize = Math.floor(cellSize * 0.32);
+    letterTileTextSize = Math.floor(cellSize * 0.5);
     window.gameContext.letterTileTextSize = letterTileTextSize;
     letterTileScoreTextSize = Math.floor(cellSize * 0.2);
     window.gameContext.letterTileScoreTextSize = letterTileScoreTextSize;
@@ -124,7 +120,7 @@ const s = (p5: P5WithTouch) => {
         }
         if (!grid.isValidWord()) {
           showMessage(
-            translateFormatted("non_valid_word", grid.getPlacedWord())
+            translateFormatted("non_valid_word", grid.getPlacedWord()!)
           );
           return;
         }
@@ -182,7 +178,7 @@ const s = (p5: P5WithTouch) => {
     // Score label
     DOM.scoreLabel = document.createElement("span");
     DOM.scoreLabel.id = "score-label";
-    DOM.scoreLabel.innerText = translateFormatted("score_label", 0);
+    DOM.scoreLabel.innerText = translateFormatted("score_label", "0");
     document.getElementById("game-stats")?.appendChild(DOM.scoreLabel);
 
     // Last played word label (optional)
@@ -307,7 +303,7 @@ const s = (p5: P5WithTouch) => {
 
     DOM.scoreLabel.innerText = translateFormatted(
       "score_label",
-      window.gameService.getScore()
+      window.gameService.getScore().toString()
     );
     DOM.lastWordLabel.innerText = translateFormatted(
       "last_word",
@@ -344,8 +340,6 @@ const s = (p5: P5WithTouch) => {
     // This is needed because p5.js npm version may not auto-register touch events
     const canvas = document.querySelector("canvas");
     if (canvas) {
-      showMessage("Registering touch events on canvas", "info", 2000);
-
       canvas.addEventListener(
         "touchstart",
         () => {

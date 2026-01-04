@@ -1,6 +1,6 @@
 import { translate } from "./translationUtils.js";
 
-import { p } from "../utils/p5Utils.js";
+import { p } from "./p5Utils.js";
 
 export const styleUtils = {
   sketch: {

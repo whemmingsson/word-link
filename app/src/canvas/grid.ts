@@ -1,6 +1,6 @@
 import type { Letter } from "../types/Letter.js";
 // @ts-ignore: Ignore missing module error for renderUtils for now
-import { renderUtils } from "./renderUtils.js";
+import { renderUtils } from "../utils/renderUtils.js";
 import type P5 from "p5";
 export class Grid {
   p5: P5;
