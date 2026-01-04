@@ -1,4 +1,4 @@
-import { tileConfigService } from "./TileConfigService";
+import { gridConfigService } from "./GridConfigService";
 import { persistanceService } from "./PersistanceService";
 
 interface PlacedLetter {
@@ -14,7 +14,7 @@ interface PlacedLetter {
 const getLetterValueMultiplier = (letter: PlacedLetter): number => {
   if (letter.wildCard) return 1;
   if (!letter.isLive) return 1;
-  return tileConfigService.getLetterMultiplierAt(letter.col, letter.row);
+  return gridConfigService.getLetterMultiplierAt(letter.col, letter.row);
 };
 
 export class Word {
@@ -28,7 +28,7 @@ export class Word {
     return this.letters
       .filter((l) => l.isLive)
       .reduce((acc, letter) => {
-        const wordMultiplier = tileConfigService.getWordMultiplierAt(
+        const wordMultiplier = gridConfigService.getWordMultiplierAt(
           letter.col,
           letter.row
         );

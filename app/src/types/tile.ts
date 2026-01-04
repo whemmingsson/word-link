@@ -1,4 +1,4 @@
-export const Tile = {
+export const BoardCell = {
   Empty: 0,
   DoubleLetter: 1,
   TripleLetter: 2,
@@ -6,14 +6,14 @@ export const Tile = {
   TripleWord: 4,
 } as const;
 
-export type Tile = (typeof Tile)[keyof typeof Tile];
+export type BoardCell = (typeof BoardCell)[keyof typeof BoardCell];
 
-export interface GridTile {
-  tileType: Tile;
+export interface GameGridTile {
+  tileType: BoardCell;
   x: number;
   y: number;
 }
 
-export interface TileConfigType {
-  tiles: GridTile[];
+export interface BoardConfigType {
+  cells: GameGridTile[];
 }

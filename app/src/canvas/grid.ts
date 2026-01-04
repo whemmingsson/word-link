@@ -1,6 +1,13 @@
+import type { PlacedLetter } from "../types/PlacedLetter.js";
+import { mouseX, mouseY } from "../utils/p5Utils.js";
+// @ts-ignore: Ignore missing module error for renderUtils for now
 import { renderUtils } from "./renderUtils.js";
 export class Grid {
-  constructor(rows, cols, cellSize) {
+  rows: number;
+  cols: number;
+  cellSize: number;
+  liveLetters: PlacedLetter[];
+  constructor(rows: number, cols: number, cellSize: number) {
     this.rows = rows;
     this.cols = cols;
     this.cellSize = cellSize;
@@ -8,7 +15,7 @@ export class Grid {
   }
 
   // Helper function to normalize letter data and prevent nesting
-  _normalizeLetter(letterObj, row, col, isLive = true) {
+  _normalizeLetter(letterObj: any, row: number, col: number, isLive = true) {
     return {
       letter: letterObj.letter,
       value: letterObj.value || 0,
@@ -24,15 +31,21 @@ export class Grid {
   // This ensures that when the grid is zoomed, we get the correct grid cell under the mouse cursor
   _getTransformedMouseCoords() {
     // Check if zoom is enabled and zoom controller is available
-    if (window.gameContext?.EXPERIMENTAL?.zoomEnabled && window.gameContext?.zoomController) {
+    if (
+      window.gameContext?.EXPERIMENTAL?.zoomEnabled &&
+      window.gameContext?.zoomController
+    ) {
       // Transform screen coordinates to canvas coordinates
-      return window.gameContext.zoomController.screenToCanvas(mouseX, mouseY);
+      return window.gameContext.zoomController.screenToCanvas(
+        mouseX(),
+        mouseY()
+      );
     }
     // No zoom - use raw mouse coordinates
-    return { x: mouseX, y: mouseY };
+    return { x: mouseX(), y: mouseY() };
   }
 
-  _cellIsOccupied(row, col) {
+  _cellIsOccupied(row: number, col: number) {
     if (window.boardService) {
       return window.boardService.cellIsOccupied(row, col);
     }
@@ -40,20 +53,19 @@ export class Grid {
   }
 
   // Convert x coordinate to grid column, using transformed mouse position when zoom is active
-  _getCol(mX) {
+  _getCol(mX: number) {
     return Math.floor(mX / this.cellSize);
   }
 
   // Convert y coordinate to grid row, using transformed mouse position when zoom is active
-  _getRow(mY) {
+  _getRow(mY: number) {
     return Math.floor(mY / this.cellSize);
   }
 
   render() {
-    // Render special tiles from tileConfigService
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        const tileType = window.tileConfigService.getTileTypeAt(col, row);
+        const tileType = window.gridConfigService.getTileTypeAt(col, row);
 
         renderUtils.renderBoardTileAtPosition(
           col * this.cellSize + this.cellSize / 2,
@@ -134,14 +146,14 @@ export class Grid {
     );
   }
 
-  showWildcardSelector(placedLetter) {
+  showWildcardSelector(placedLetter: PlacedLetter) {
     window.gameContext.wildcard = {
       letter: placedLetter,
       selecting: true,
     };
   }
 
-  dropLetter(letter) {
+  dropLetter(letter: PlacedLetter) {
     // Use transformed coordinates to place letter at correct grid position (accounts for zoom/pan)
     const coords = this._getTransformedMouseCoords();
     const col = this._getCol(coords.x);
@@ -179,7 +191,7 @@ export class Grid {
     this.liveLetters = [];
   }
 
-  removeLetter(placedLetter) {
+  removeLetter(placedLetter: PlacedLetter) {
     this.liveLetters = this.liveLetters.filter((l) => l !== placedLetter);
 
     if (window.boardService && placedLetter) {
@@ -189,7 +201,7 @@ export class Grid {
 
   finalizeMove() {
     let score = 0;
-    let word = "";
+    let word: string | undefined = "";
     if (window.boardService && window.gameService) {
       word = this.getPlacedWord();
       // Scoring
@@ -199,7 +211,7 @@ export class Grid {
         .reduce((a, b) => a + b, 0);
       window.gameService.updateScore(score);
       window.boardService.finalizeMove();
-      window.gameService.setLastWord(word);
+      window.gameService.setLastWord(word!);
       window.gameService.save();
     }
     this.lockLetters();
@@ -236,7 +248,7 @@ export class Grid {
 
   isValidWord() {
     if (window.boardService) {
-      const word = this.getPlacedWord();
+      const word = this.getPlacedWord()!;
       return window.dictionaryService.hasWord(word);
     }
     return false;

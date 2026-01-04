@@ -1,4 +1,12 @@
 export class ZoomController {
+  zoom: number;
+  panX: number;
+  panY: number;
+  isDragging: boolean;
+  lastMouseX: number;
+  lastMouseY: number;
+  minZoom: number;
+  maxZoom: number;
   constructor() {
     this.zoom = 1;
     this.panX = 0;
@@ -15,7 +23,7 @@ export class ZoomController {
     scale(this.zoom);
   }
 
-  handleZoom(delta, centerX, centerY) {
+  handleZoom(delta: number, centerX: number, centerY: number) {
     const oldZoom = this.zoom;
     this.zoom -= delta * 0.001;
     this.zoom = constrain(this.zoom, this.minZoom, this.maxZoom);
@@ -26,13 +34,13 @@ export class ZoomController {
     this.panY -= centerY * zoomChange;
   }
 
-  startPan(x, y) {
+  startPan(x: number, y: number) {
     this.isDragging = true;
     this.lastMouseX = x;
     this.lastMouseY = y;
   }
 
-  updatePan(x, y) {
+  updatePan(x: number, y: number) {
     if (this.isDragging) {
       this.panX += x - this.lastMouseX;
       this.panY += y - this.lastMouseY;
@@ -46,7 +54,7 @@ export class ZoomController {
   }
 
   // Convert screen coordinates to canvas coordinates
-  screenToCanvas(x, y) {
+  screenToCanvas(x: number, y: number) {
     return {
       x: (x - this.panX) / this.zoom,
       y: (y - this.panY) / this.zoom,

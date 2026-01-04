@@ -2,7 +2,7 @@ import { renderUtils } from "./renderUtils";
 import { styleUtils } from "./styleUtils";
 
 export class Letterbar {
-  constructor(x, y, width, cellSize) {
+  constructor(x, y, width) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -74,13 +74,11 @@ export class Letterbar {
   }
 
   mouseIsOver() {
-    const mX = mouseX;
-    const mY = mouseY;
     return (
-      mX >= this.x &&
-      mX < this.x + this.width &&
-      mY >= this.y &&
-      mY < this.y + this.height
+      mouseX >= this.x &&
+      mouseX < this.x + this.width &&
+      mouseY >= this.y &&
+      mouseY < this.y + this.height
     );
   }
 
