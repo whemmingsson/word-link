@@ -8,21 +8,25 @@ export class Letterbar {
     this.width = width;
     this.letters = [];
     this.lettersOnGrid = [];
-    this.padding = 20;
-    this.height = cellSize + this.padding * 2;
+    this.padding = 5;
+    this.height = 70;
     this.markedLettersIndices = [];
+    this.tileCellSize = 64;
+    this.spacingMultiplier = 1.1;
+    this.updateTileCellSize();
   }
 
   _getLetterX(index) {
     return (
       this.x +
-      this.padding +
-      index * window.gameContext.cellSize * 1.5 +
-      window.gameContext.cellSize / 2
+      this.padding * this.spacingMultiplier +
+      index * this.tileCellSize * this.spacingMultiplier +
+      this.tileCellSize / 2
     );
   }
 
   _getLetterY() {
+    // Center letters vertically in the bar
     return this.y + this.height / 2;
   }
 
@@ -52,7 +56,7 @@ export class Letterbar {
         this.letters[i],
         x,
         y,
-        window.gameContext.cellSize
+        this.tileCellSize
       );
 
       // Highlight if marked
@@ -189,5 +193,26 @@ export class Letterbar {
     if (window.letterPoolService) {
       window.letterPoolService.load();
     }
+  }
+
+  updateTileCellSize() {
+    // Calculate optimal cell size based on horizontal spacing constraints
+    // With 7 letters, we need: left_padding + cellSize/2 + 6*cellSize*spacing + cellSize/2 + right_padding
+    // Which simplifies to: 2*padding*spacing + cellSize*(1 + 6*spacing)
+    // Solving for cellSize: (width - 2*padding*spacing) / (1 + 6*spacing)
+    const horizontalConstraint =
+      (this.width - 2 * this.padding * this.spacingMultiplier) /
+      (1 + 6 * this.spacingMultiplier);
+
+    // Calculate maximum cell size based on vertical constraints
+    // We need spacing top and bottom: 2*padding*spacing + cellSize <= height
+    const verticalConstraint =
+      this.height - 2 * this.padding * this.spacingMultiplier;
+
+    // Use the smaller of the two constraints to ensure letters fit in both dimensions
+    this.tileCellSize = Math.max(
+      10,
+      Math.min(horizontalConstraint, verticalConstraint)
+    );
   }
 }

@@ -450,6 +450,7 @@ window.windowResized = function () {
   bar.cellSize = cellSize;
   bar.y = grid.getHeight() + margin;
   bar.width = grid.getWidth();
+  bar.updateTileCellSize();
 
   resizeCanvas(grid.getWidth(), grid.getHeight() + bar.getHeight() + margin);
 
